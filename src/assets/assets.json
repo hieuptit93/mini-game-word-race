@@ -1,0 +1,1911 @@
+{
+  "game_id": "word_racer",
+  "source": "uploads/word_racer.html",
+  "generated_at": "2026-07-28T09:48:52.485Z",
+  "export_scale": "4x",
+  "structure": {
+    "assets/images/parts": "Part rời của rig — ghép bằng anchor + z + animation channel",
+    "assets/images/sprites": "Sprite/screen đã ghép sẵn, chỉ để tham chiếu (1 frame tĩnh)",
+    "assets/sounds": "SFX + 2 loop nhạc, render 44.1kHz mono WAV từ code WebAudio gốc"
+  },
+  "fonts": {
+    "canvas": {
+      "family": "Press Start 2P",
+      "sizes_px": [
+        7,
+        8,
+        9,
+        10,
+        12,
+        16,
+        18
+      ],
+      "baseline": "top",
+      "note": "mọi chữ trong canvas dùng font này"
+    },
+    "shell": {
+      "family": "Nunito",
+      "weights": [
+        400,
+        700,
+        800
+      ],
+      "note": "UI HTML quanh máy chơi"
+    }
+  },
+  "palette": [
+    {
+      "token": "car",
+      "hex": "#00e000",
+      "use": "Thân xe người chơi (bitmap 8×11, px=4)"
+    },
+    {
+      "token": "car-glass",
+      "hex": "#aff7ff",
+      "use": "Kính lái + tia zap"
+    },
+    {
+      "token": "obs-1",
+      "hex": "#ff8c1a",
+      "use": "Vật cản vk0 (nón)"
+    },
+    {
+      "token": "obs-2",
+      "hex": "#ff2a2a",
+      "use": "Vật cản vk1 (khối chắn)"
+    },
+    {
+      "token": "obs-3",
+      "hex": "#ffe600",
+      "use": "Vật cản vk2 + chữ HUD nhấn + viền biển làn active"
+    },
+    {
+      "token": "coin",
+      "hex": "#ffd24a",
+      "use": "Xu — đĩa ngoài, số xu HUD"
+    },
+    {
+      "token": "coin-core",
+      "hex": "#e0a800",
+      "use": "Lõi xu"
+    },
+    {
+      "token": "coin-shine",
+      "hex": "#fff3c0",
+      "use": "Ánh sáng trên xu"
+    },
+    {
+      "token": "coin-float",
+      "hex": "#ffe08a",
+      "use": "Float text “+1 / +15 XU”"
+    },
+    {
+      "token": "shield",
+      "hex": "#7fd0ff",
+      "use": "Khiên: vỏ, vòng quanh xe, nhãn HUD, LED khiên"
+    },
+    {
+      "token": "shield-hi",
+      "hex": "#eaf7ff",
+      "use": "Chữ thập trên khiên"
+    },
+    {
+      "token": "magnet",
+      "hex": "#e05555",
+      "use": "Nam châm + nhãn HUD + LED nam châm"
+    },
+    {
+      "token": "steel",
+      "hex": "#c8ccd0",
+      "use": "Đầu cực nam châm, bệ rào"
+    },
+    {
+      "token": "barrier-red",
+      "hex": "#ff3355",
+      "use": "Sọc rào + thanh cảnh báo trên"
+    },
+    {
+      "token": "road-shoulder",
+      "hex": "#20262c",
+      "use": "Lề đường"
+    },
+    {
+      "token": "road",
+      "hex": "#31383f",
+      "use": "Mặt đường 3 làn"
+    },
+    {
+      "token": "road-edge",
+      "hex": "#e8e8e8",
+      "use": "Vạch biên trái/phải"
+    },
+    {
+      "token": "road-dash",
+      "hex": "#aab4bd",
+      "use": "Vạch đứt phân làn (cuộn)"
+    },
+    {
+      "token": "sign-idle",
+      "hex": "#14181c",
+      "use": "Nền biển làn không active"
+    },
+    {
+      "token": "sign-active",
+      "hex": "#2a2a00",
+      "use": "Nền biển làn đang chạy"
+    },
+    {
+      "token": "sign-border",
+      "hex": "#5b6b7e",
+      "use": "Viền biển làn không active"
+    },
+    {
+      "token": "life",
+      "hex": "#ff5b7a",
+      "use": "Ô mạng còn"
+    },
+    {
+      "token": "life-off",
+      "hex": "#3a1420",
+      "use": "Ô mạng đã mất"
+    },
+    {
+      "token": "hud-round",
+      "hex": "#00fc00",
+      "use": "Số chặng + tiêu đề WORD RACER"
+    },
+    {
+      "token": "timer-ok",
+      "hex": "#3dff7a",
+      "use": "Đếm ngược > 50% + LED đổi làn"
+    },
+    {
+      "token": "timer-warn",
+      "hex": "#ffd60a",
+      "use": "Đếm ngược 25–50%"
+    },
+    {
+      "token": "timer-crit",
+      "hex": "#ff4040",
+      "use": "Đếm ngược < 25%"
+    },
+    {
+      "token": "crash",
+      "hex": "#ff5544",
+      "use": "Chữ GAME OVER + LED va chạm"
+    },
+    {
+      "token": "star",
+      "hex": "#ffca28",
+      "use": "Sao title + nút vật lý ⭐"
+    },
+    {
+      "token": "bg",
+      "hex": "#000000",
+      "use": "Nền canvas (ngoài đường)"
+    },
+    {
+      "token": "panel",
+      "hex": "#101418",
+      "use": "Nền khung máy / lỗ nam châm"
+    },
+    {
+      "token": "flash",
+      "hex": "#ffffff",
+      "use": "Flash va chạm & phá rào (alpha giảm dần)"
+    },
+    {
+      "token": "led-drive",
+      "hex": "#7cc7ef",
+      "use": "LED khi đang lái"
+    },
+    {
+      "token": "led-boss",
+      "hex": "#c07bff",
+      "use": "LED khi mini-boss"
+    },
+    {
+      "token": "led-nearmiss",
+      "hex": "#ffb020",
+      "use": "LED khi near-miss"
+    }
+  ],
+  "tuning": {
+    "canvas": {
+      "width": 480,
+      "height": 320,
+      "rendering": "pixelated"
+    },
+    "road": {
+      "left": 96,
+      "right": 384,
+      "lane_width": 96,
+      "lane_center_x": [
+        144,
+        240,
+        336
+      ],
+      "dash": "4×26px, bước 56px"
+    },
+    "car": {
+      "w": 32,
+      "h": 44,
+      "y": 246,
+      "lane_ease": "carX += (LANE_X[lane] − carX) · min(1, dt/120)"
+    },
+    "speed": {
+      "base_px_s": 58,
+      "per_round": 4,
+      "ramp": "×(1 + min(0.5, runSec/450 · 0.5)) — tăng đều tối đa +50% trong 450s",
+      "barrier_scroll_k": 0.5
+    },
+    "spawn": {
+      "wave_ms": "max(1100, 2100 − runSec·4)",
+      "double_obstacle_p": "min(0.4, runSec/300 · 0.4)",
+      "coin_cluster": "3 xu cách 40px, ở làn KHÁC làn xe",
+      "bonus_p": {
+        "shield": 0.05,
+        "magnet": 0.07
+      },
+      "miniboss_every": "9–11 đợt"
+    },
+    "rules": {
+      "lives": 3,
+      "invincible_ms": 1200,
+      "magnet_ms": 5000,
+      "barrier_ms": 6500,
+      "match_lock_ms": 420,
+      "combo": "min(3, 1 + floor(streak/4))"
+    }
+  },
+  "rigs": [
+    {
+      "id": "car",
+      "name": "Xe đua (player)",
+      "frame": {
+        "w": 48,
+        "h": 56
+      },
+      "lane_width": 96,
+      "facing": "Xe luôn nhìn LÊN (hướng chạy). Không lật. Đổi làn = dịch cả rig theo trục X: carX += (LANE_X[lane] − carX) · min(1, dt/120) — ease mũ, hằng số thời gian ~120ms, quãng đường 96px/làn.",
+      "parts": [
+        {
+          "id": "car_nose",
+          "name": "Mũi xe (bmp row 0–2)",
+          "file": "assets/images/parts/car_nose.png",
+          "anchor": {
+            "x": 8,
+            "y": 4
+          },
+          "size": {
+            "w": 32,
+            "h": 12
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "#00e000",
+          "animation": {
+            "static": "trong v2",
+            "suggest": "translateY −1px khi tăng tốc (đề xuất)"
+          }
+        },
+        {
+          "id": "car_wing_front",
+          "name": "Cánh trước (row 3–5)",
+          "file": "assets/images/parts/car_wing_front.png",
+          "anchor": {
+            "x": 8,
+            "y": 16
+          },
+          "size": {
+            "w": 32,
+            "h": 12
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "#00e000",
+          "animation": {
+            "static": "trong v2",
+            "suggest": "rotate ±3° theo hướng đổi làn (đề xuất)"
+          }
+        },
+        {
+          "id": "car_cockpit",
+          "name": "Thân buồng lái (row 6–7)",
+          "file": "assets/images/parts/car_cockpit.png",
+          "anchor": {
+            "x": 8,
+            "y": 28
+          },
+          "size": {
+            "w": 32,
+            "h": 8
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "#00e000",
+          "animation": {
+            "static": true
+          }
+        },
+        {
+          "id": "car_wing_rear",
+          "name": "Cánh sau (row 8–9)",
+          "file": "assets/images/parts/car_wing_rear.png",
+          "anchor": {
+            "x": 8,
+            "y": 36
+          },
+          "size": {
+            "w": 32,
+            "h": 8
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "#00e000",
+          "animation": {
+            "static": true
+          }
+        },
+        {
+          "id": "car_wheels",
+          "name": "Bánh sau (row 10)",
+          "file": "assets/images/parts/car_wheels.png",
+          "anchor": {
+            "x": 8,
+            "y": 44
+          },
+          "size": {
+            "w": 32,
+            "h": 4
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "#00e000",
+          "animation": {
+            "static": "trong v2",
+            "suggest": "toggle 2 frame mỗi 80ms để giả vòng quay (đề xuất)"
+          }
+        },
+        {
+          "id": "car_window",
+          "name": "Kính lái",
+          "file": "assets/images/parts/car_window.png",
+          "anchor": {
+            "x": 16,
+            "y": 12
+          },
+          "size": {
+            "w": 16,
+            "h": 8
+          },
+          "z": 2,
+          "origin": "top-left",
+          "color": "#aff7ff",
+          "animation": {
+            "static": true,
+            "note": "fillRect(carX−8, CAR_Y+8, 16, 8)"
+          }
+        },
+        {
+          "id": "car_shield_ring",
+          "name": "Vòng khiên",
+          "file": "assets/images/parts/car_shield_ring.png",
+          "anchor": {
+            "x": 5,
+            "y": 1
+          },
+          "size": {
+            "w": 38,
+            "h": 50
+          },
+          "z": 3,
+          "origin": "top-left",
+          "color": "#7fd0ff",
+          "animation": {
+            "visible": "chỉ khi shield > 0",
+            "stroke": "2px, bao CAR_W+6 × CAR_H+6"
+          }
+        }
+      ],
+      "states": [
+        {
+          "id": "drive",
+          "label": "Đang lái",
+          "flags": {}
+        },
+        {
+          "id": "shield",
+          "label": "Có khiên",
+          "flags": {
+            "shield": true
+          }
+        },
+        {
+          "id": "inv",
+          "label": "Bất tử (nhấp nháy)",
+          "flags": {
+            "inv": true
+          }
+        }
+      ],
+      "channels": [
+        {
+          "target": "Cả rig",
+          "channel": "translateX",
+          "value": "carX += (LANE_X[lane] − carX) · min(1, dt/120)",
+          "when": "mỗi khi nói trúng từ của làn khác (changeLane)"
+        },
+        {
+          "target": "Cả rig",
+          "channel": "visible",
+          "value": "ẩn khi now < invUntil && floor(t/120) % 2 === 0",
+          "when": "1200ms bất tử sau va chạm — nhấp nháy 120ms/frame (game ẩn hẳn, không hạ alpha)"
+        },
+        {
+          "target": "Vòng khiên",
+          "channel": "visible",
+          "value": "shield > 0",
+          "when": "bật khi nhặt khiên, tắt ngay khi đỡ 1 va chạm"
+        },
+        {
+          "target": "Flash va chạm",
+          "channel": "opacity",
+          "value": "alpha = (until − t)/160, rect trắng phủ CAR+12px",
+          "when": "160ms tại thời điểm crash — hiệu ứng rời, không thuộc rig"
+        }
+      ]
+    },
+    {
+      "id": "obstacle",
+      "name": "Vật cản (3 biến thể vk)",
+      "frame": {
+        "w": 40,
+        "h": 36
+      },
+      "lane_width": 96,
+      "facing": "Không lật, không xoay. vk = (Math.random()*3)|0 chọn 1 trong 3 bitmap + 1 màu; hộp va chạm chung OB_W 34 × OB_H 30.",
+      "parts": [
+        {
+          "id": "obs_cone",
+          "name": "vk0 — nón (8×7)",
+          "file": "assets/images/parts/obs_cone.png",
+          "anchor": {
+            "x": 4,
+            "y": 4
+          },
+          "size": {
+            "w": 32,
+            "h": 28
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "#ff8c1a",
+          "animation": {
+            "visible": "vk === 0",
+            "fill": "phẳng 1 màu → tint bằng shader"
+          }
+        },
+        {
+          "id": "obs_block",
+          "name": "vk1 — khối chắn (8×6)",
+          "file": "assets/images/parts/obs_block.png",
+          "anchor": {
+            "x": 4,
+            "y": 6
+          },
+          "size": {
+            "w": 32,
+            "h": 24
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "#ff2a2a",
+          "animation": {
+            "visible": "vk === 1"
+          }
+        },
+        {
+          "id": "obs_hazard",
+          "name": "vk2 — bát giác (8×6)",
+          "file": "assets/images/parts/obs_hazard.png",
+          "anchor": {
+            "x": 4,
+            "y": 6
+          },
+          "size": {
+            "w": 32,
+            "h": 24
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "#ffe600",
+          "animation": {
+            "visible": "vk === 2"
+          }
+        }
+      ],
+      "states": [
+        {
+          "id": "vk0",
+          "label": "vk0 — nón",
+          "flags": {
+            "vk": 0
+          }
+        },
+        {
+          "id": "vk1",
+          "label": "vk1 — khối",
+          "flags": {
+            "vk": 1
+          }
+        },
+        {
+          "id": "vk2",
+          "label": "vk2 — bát giác",
+          "flags": {
+            "vk": 2
+          }
+        }
+      ],
+      "channels": [
+        {
+          "target": "Cả rig",
+          "channel": "translateY",
+          "value": "y += speed(t) · dt/1000",
+          "when": "luôn — speed = (58 + 4·(round−1)) · (1 + min(0.5, runSec/450·0.5))"
+        },
+        {
+          "target": "Cả rig",
+          "channel": "despawn",
+          "value": "y > 360 → xoá",
+          "when": "ra khỏi màn"
+        },
+        {
+          "target": "Cả rig",
+          "channel": "tint",
+          "value": "vk0 #ff8c1a · vk1 #ff2a2a · vk2 #ffe600",
+          "when": "gán 1 lần lúc spawn, không đổi trong đời vật cản"
+        },
+        {
+          "target": "Điểm vượt",
+          "channel": "event",
+          "value": "y > CAR_Y + CAR_H → +6·round·combo, sfx pass",
+          "when": "1 lần/vật cản (cờ passed)"
+        }
+      ]
+    },
+    {
+      "id": "coin",
+      "name": "Xu (thước đo chính)",
+      "frame": {
+        "w": 32,
+        "h": 32
+      },
+      "lane_width": 96,
+      "facing": "Tĩnh, đối xứng. Tâm rig = tâm làn, y = item.y + OB_H/2. Pha pulse lệch theo toạ độ X của làn.",
+      "parts": [
+        {
+          "id": "coin_disc",
+          "name": "Đĩa xu",
+          "file": "assets/images/parts/coin_disc.png",
+          "anchor": {
+            "x": 8,
+            "y": 8
+          },
+          "size": {
+            "w": 16,
+            "h": 16
+          },
+          "z": 1,
+          "origin": "center",
+          "color": "#ffd24a",
+          "animation": {
+            "scale": "1 + 0.12·sin(t/160 + laneX)",
+            "pivot": "center",
+            "note": "laneX ∈ {144,240,336} → 3 làn thở lệch pha"
+          }
+        },
+        {
+          "id": "coin_core",
+          "name": "Lõi tối",
+          "file": "assets/images/parts/coin_core.png",
+          "anchor": {
+            "x": 11,
+            "y": 11
+          },
+          "size": {
+            "w": 10,
+            "h": 10
+          },
+          "z": 2,
+          "origin": "center",
+          "color": "#e0a800",
+          "animation": {
+            "scale": "cùng hệ số pulse với đĩa (r × 0.55)",
+            "pivot": "center"
+          }
+        },
+        {
+          "id": "coin_shine",
+          "name": "Ánh sáng",
+          "file": "assets/images/parts/coin_shine.png",
+          "anchor": {
+            "x": 14,
+            "y": 13
+          },
+          "size": {
+            "w": 2,
+            "h": 4
+          },
+          "z": 3,
+          "origin": "top-left",
+          "color": "#fff3c0",
+          "animation": {
+            "static": true,
+            "note": "KHÔNG scale theo pulse — giữ nét pixel (đúng như code)"
+          }
+        }
+      ],
+      "states": [
+        {
+          "id": "lane0",
+          "label": "Làn trái (pha 144)",
+          "flags": {
+            "phase": 144
+          }
+        },
+        {
+          "id": "lane1",
+          "label": "Làn giữa (pha 240)",
+          "flags": {
+            "phase": 240
+          }
+        },
+        {
+          "id": "lane2",
+          "label": "Làn phải (pha 336)",
+          "flags": {
+            "phase": 336
+          }
+        }
+      ],
+      "channels": [
+        {
+          "target": "Đĩa + lõi",
+          "channel": "scale",
+          "value": "1 ± 0.12, chu kỳ ~1.0s",
+          "when": "luôn chạy"
+        },
+        {
+          "target": "Cả rig",
+          "channel": "translateY",
+          "value": "y += speed(t) · dt/1000",
+          "when": "spawn theo cụm 3 xu cách nhau 40px, ở làn KHÁC làn xe"
+        },
+        {
+          "target": "Cả rig",
+          "channel": "translateY",
+          "value": "hút về xe khi magnet bật: xoá tại y ∈ [CAR_Y−30, CAR_Y+60] bất kể làn",
+          "when": "5000ms sau khi nhặt nam châm"
+        },
+        {
+          "target": "Khi nhặt",
+          "channel": "despawn",
+          "value": "+1 xu, float text “+1” #ffe08a bay lên 18px/s trong 900ms",
+          "when": "va chạm cùng làn hoặc magnet"
+        }
+      ]
+    },
+    {
+      "id": "shield",
+      "name": "Khiên (power-up, ~5%)",
+      "frame": {
+        "w": 24,
+        "h": 24
+      },
+      "lane_width": 96,
+      "facing": "Tĩnh. Hình lục giác khiên + chữ thập. Không animation trong v2 — đề xuất pulse alpha để dễ thấy.",
+      "parts": [
+        {
+          "id": "shield_hex",
+          "name": "Vỏ khiên",
+          "file": "assets/images/parts/shield_hex.png",
+          "anchor": {
+            "x": 3,
+            "y": 2
+          },
+          "size": {
+            "w": 18,
+            "h": 21
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "#7fd0ff",
+          "animation": {
+            "static": true,
+            "shape": "6 đỉnh: (9,0)(18,4)(18,13)(9,21)(0,13)(0,4)"
+          }
+        },
+        {
+          "id": "shield_cross",
+          "name": "Chữ thập",
+          "file": "assets/images/parts/shield_cross.png",
+          "anchor": {
+            "x": 7,
+            "y": 6
+          },
+          "size": {
+            "w": 10,
+            "h": 10
+          },
+          "z": 2,
+          "origin": "top-left",
+          "color": "#eaf7ff",
+          "animation": {
+            "static": true
+          }
+        }
+      ],
+      "states": [
+        {
+          "id": "idle",
+          "label": "Trên đường",
+          "flags": {}
+        }
+      ],
+      "channels": [
+        {
+          "target": "Cả rig",
+          "channel": "translateY",
+          "value": "y += speed(t) · dt/1000",
+          "when": "luôn — spawn thay xu đầu cụm với xác suất 5%"
+        },
+        {
+          "target": "Khi nhặt",
+          "channel": "despawn",
+          "value": "shield = 1, sfx powerup, float “SHIELD” #7fd0ff, LED #7fd0ff 250ms",
+          "when": "chạm xe cùng làn"
+        },
+        {
+          "target": "Cả rig",
+          "channel": "opacity",
+          "value": "0.75 + 0.25·sin(t/180) (đề xuất)",
+          "when": "chưa có trong v2 — thêm để item hiếm nổi bật"
+        }
+      ]
+    },
+    {
+      "id": "magnet",
+      "name": "Nam châm (power-up, ~7%)",
+      "frame": {
+        "w": 24,
+        "h": 32
+      },
+      "lane_width": 96,
+      "facing": "Tĩnh, hình chữ U ngược. Tâm x = 12, cy = 21 (theo code: cy = y + OB_H/2).",
+      "parts": [
+        {
+          "id": "magnet_legs",
+          "name": "Hai chân từ",
+          "file": "assets/images/parts/magnet_legs.png",
+          "anchor": {
+            "x": 3,
+            "y": 12
+          },
+          "size": {
+            "w": 18,
+            "h": 12
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "#e05555",
+          "animation": {
+            "static": true,
+            "note": "2 rect 6×12 cách nhau 6px"
+          }
+        },
+        {
+          "id": "magnet_arc",
+          "name": "Cung nam châm",
+          "file": "assets/images/parts/magnet_arc.png",
+          "anchor": {
+            "x": 3,
+            "y": 3
+          },
+          "size": {
+            "w": 18,
+            "h": 9
+          },
+          "z": 2,
+          "origin": "top-left",
+          "color": "#e05555",
+          "animation": {
+            "static": true,
+            "shape": "nửa cung trên r = 9"
+          }
+        },
+        {
+          "id": "magnet_tips",
+          "name": "Đầu cực (bạc)",
+          "file": "assets/images/parts/magnet_tips.png",
+          "anchor": {
+            "x": 3,
+            "y": 24
+          },
+          "size": {
+            "w": 18,
+            "h": 5
+          },
+          "z": 2,
+          "origin": "top-left",
+          "color": "#c8ccd0",
+          "animation": {
+            "static": true
+          }
+        },
+        {
+          "id": "magnet_hole",
+          "name": "Lỗ trong cung",
+          "file": "assets/images/parts/magnet_hole.png",
+          "anchor": {
+            "x": 9,
+            "y": 9
+          },
+          "size": {
+            "w": 6,
+            "h": 3
+          },
+          "z": 3,
+          "origin": "top-left",
+          "color": "#101418",
+          "animation": {
+            "static": true,
+            "note": "cùng màu nền canvas — nếu tint, dùng alpha punch-out"
+          }
+        }
+      ],
+      "states": [
+        {
+          "id": "idle",
+          "label": "Trên đường",
+          "flags": {}
+        }
+      ],
+      "channels": [
+        {
+          "target": "Cả rig",
+          "channel": "translateY",
+          "value": "y += speed(t) · dt/1000",
+          "when": "luôn"
+        },
+        {
+          "target": "Khi nhặt",
+          "channel": "state",
+          "value": "magnetUntil = now + 5000ms; HUD hiện “MAGNET”",
+          "when": "trong 5s mọi xu tự bị hút, không cần đổi làn"
+        },
+        {
+          "target": "Cả rig",
+          "channel": "rotate",
+          "value": "±6° đảo mỗi 240ms (đề xuất)",
+          "when": "chưa có trong v2"
+        }
+      ]
+    },
+    {
+      "id": "barrier",
+      "name": "Rào khổng lồ (mini-boss)",
+      "frame": {
+        "w": 288,
+        "h": 32
+      },
+      "lane_width": 96,
+      "facing": "Trải hết bề rộng đường (ROAD_L 96 → ROAD_R 384 = 288px). Không né được; chỉ phá bằng cách nói cả câu.",
+      "parts": [
+        {
+          "id": "barrier_rail",
+          "name": "Thanh cảnh báo trên",
+          "file": "assets/images/parts/barrier_rail.png",
+          "anchor": {
+            "x": 0,
+            "y": 0
+          },
+          "size": {
+            "w": 288,
+            "h": 4
+          },
+          "z": 3,
+          "origin": "top-left",
+          "color": "#ff3355",
+          "animation": {
+            "static": true,
+            "note": "fillRect(ROAD_L, y−6, 288, 4)"
+          }
+        },
+        {
+          "id": "barrier_block",
+          "name": "Ô sọc (tile 24×16)",
+          "file": "assets/images/parts/barrier_block.png",
+          "anchor": {
+            "x": 0,
+            "y": 6
+          },
+          "size": {
+            "w": 24,
+            "h": 16
+          },
+          "z": 2,
+          "origin": "top-left",
+          "color": "#ffffff → tint",
+          "animation": {
+            "repeat": "12 tile, stepX = 24px, phủ kín 288px",
+            "tintCycle": "index chẵn #ff3355 · index lẻ #ffe600",
+            "note": "part export TRẮNG phẳng — tint bằng shader, không xuất 2 bản màu"
+          }
+        },
+        {
+          "id": "barrier_base",
+          "name": "Bệ thép",
+          "file": "assets/images/parts/barrier_base.png",
+          "anchor": {
+            "x": 0,
+            "y": 22
+          },
+          "size": {
+            "w": 288,
+            "h": 6
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "#c8ccd0",
+          "animation": {
+            "static": true
+          }
+        }
+      ],
+      "states": [
+        {
+          "id": "block",
+          "label": "Đang chặn",
+          "flags": {}
+        }
+      ],
+      "channels": [
+        {
+          "target": "Cả rig",
+          "channel": "translateY",
+          "value": "y += speed(t) · 0.5 · dt/1000",
+          "when": "chỉ để hiển thị — rào không thực sự va chạm theo vị trí"
+        },
+        {
+          "target": "Ô sọc",
+          "channel": "tint",
+          "value": "xen kẽ đỏ/vàng theo index",
+          "when": "cố định"
+        },
+        {
+          "target": "Cả rig",
+          "channel": "despawn",
+          "value": "nói đúng câu → xoá + flash trắng 288×44 trong 160ms, +15 xu, +100·round·combo",
+          "when": "barrierMatch: transcript chứa pattern rồi mới tới từ"
+        },
+        {
+          "target": "Cả rig",
+          "channel": "despawn",
+          "value": "hết 6500ms → mất 1 mạng, vẫn sang chặng mới",
+          "when": "deadline = shownAt + BARRIER_TIME_MS"
+        }
+      ]
+    },
+    {
+      "id": "lane_sign",
+      "name": "Biển từ của làn",
+      "frame": {
+        "w": 90,
+        "h": 24
+      },
+      "lane_width": 96,
+      "facing": "3 biển cố định tại y = 32, tâm LANE_X[i]; bề rộng = LANE_W − 10 = 86. Chữ = từ vựng của làn, không đổi trong cả chặng.",
+      "parts": [
+        {
+          "id": "sign_plate",
+          "name": "Nền biển",
+          "file": "assets/images/parts/sign_plate.png",
+          "anchor": {
+            "x": 2,
+            "y": 2
+          },
+          "size": {
+            "w": 86,
+            "h": 20
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "#14181c / #2a2a00",
+          "animation": {
+            "tintSwap": "làn xe đang chạy #2a2a00 · làn khác #14181c",
+            "static": true
+          }
+        },
+        {
+          "id": "sign_border",
+          "name": "Viền biển",
+          "file": "assets/images/parts/sign_border.png",
+          "anchor": {
+            "x": 2,
+            "y": 2
+          },
+          "size": {
+            "w": 86,
+            "h": 20
+          },
+          "z": 2,
+          "origin": "top-left",
+          "color": "#5b6b7e / #ffe600",
+          "animation": {
+            "tintSwap": "active #ffe600 · idle #5b6b7e",
+            "stroke": "2px"
+          }
+        },
+        {
+          "id": "sign_label",
+          "name": "Nhãn từ",
+          "file": "assets/images/parts/sign_label.png",
+          "anchor": {
+            "x": 2,
+            "y": 9
+          },
+          "size": {
+            "w": 86,
+            "h": 10
+          },
+          "z": 3,
+          "origin": "top-left",
+          "color": "#ffffff / #ffe600",
+          "animation": {
+            "font": "Press Start 2P 7px",
+            "align": "center",
+            "text": "từ vựng của làn (kèm mạo từ, ví dụ “a hat”)"
+          }
+        }
+      ],
+      "states": [
+        {
+          "id": "active",
+          "label": "Làn đang chạy",
+          "flags": {
+            "active": true,
+            "text": "a hat"
+          }
+        },
+        {
+          "id": "idle",
+          "label": "Làn khác",
+          "flags": {
+            "active": false,
+            "text": "a dress"
+          }
+        }
+      ],
+      "channels": [
+        {
+          "target": "Nền + viền + nhãn",
+          "channel": "tint",
+          "value": "active ↔ idle, snap không tween",
+          "when": "đổi ngay khi lane thay đổi (nói trúng từ)"
+        },
+        {
+          "target": "Nhãn",
+          "channel": "text",
+          "value": "gán 1 lần đầu chặng (shuffle 3 từ đầu của topic)",
+          "when": "setupRound()"
+        },
+        {
+          "target": "Cả rig",
+          "channel": "position",
+          "value": "cố định (LANE_X[i] − 45, 30)",
+          "when": "không trôi theo đường"
+        }
+      ]
+    },
+    {
+      "id": "road",
+      "name": "Đường đua (nền cuộn)",
+      "frame": {
+        "w": 480,
+        "h": 320
+      },
+      "lane_width": 96,
+      "facing": "Nền tĩnh trừ vạch đứt: vạch cuộn xuống theo roadScroll. Vẽ trước mọi thứ, sau khi clear nền đen #000.",
+      "parts": [
+        {
+          "id": "road_shoulder",
+          "name": "Lề đường",
+          "file": "assets/images/parts/road_shoulder.png",
+          "anchor": {
+            "x": 82,
+            "y": 0
+          },
+          "size": {
+            "w": 316,
+            "h": 320
+          },
+          "z": 0,
+          "origin": "top-left",
+          "color": "#20262c",
+          "animation": {
+            "static": true
+          }
+        },
+        {
+          "id": "road_surface",
+          "name": "Mặt đường",
+          "file": "assets/images/parts/road_surface.png",
+          "anchor": {
+            "x": 96,
+            "y": 0
+          },
+          "size": {
+            "w": 288,
+            "h": 320
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "#31383f",
+          "animation": {
+            "static": true,
+            "note": "3 làn × 96px"
+          }
+        },
+        {
+          "id": "road_edge_l",
+          "name": "Vạch biên trái",
+          "file": "assets/images/parts/road_edge_l.png",
+          "anchor": {
+            "x": 92,
+            "y": 0
+          },
+          "size": {
+            "w": 4,
+            "h": 320
+          },
+          "z": 2,
+          "origin": "top-left",
+          "color": "#e8e8e8",
+          "animation": {
+            "static": true
+          }
+        },
+        {
+          "id": "road_edge_r",
+          "name": "Vạch biên phải",
+          "file": "assets/images/parts/road_edge_r.png",
+          "anchor": {
+            "x": 384,
+            "y": 0
+          },
+          "size": {
+            "w": 4,
+            "h": 320
+          },
+          "z": 2,
+          "origin": "top-left",
+          "color": "#e8e8e8",
+          "animation": {
+            "static": true
+          }
+        },
+        {
+          "id": "road_dash",
+          "name": "Vạch đứt (tile 4×26)",
+          "file": "assets/images/parts/road_dash.png",
+          "anchor": {
+            "x": 190,
+            "y": 0
+          },
+          "size": {
+            "w": 4,
+            "h": 26
+          },
+          "z": 2,
+          "origin": "top-left",
+          "color": "#aab4bd",
+          "animation": {
+            "repeat": "2 cột x = 190 và 286; mỗi cột lặp theo y bước 56px từ y = −40",
+            "translateY": "(roadScroll mod 56), roadScroll += speed(t) · dt/1000",
+            "note": "đây là nguồn cảm giác tốc độ duy nhất của nền"
+          }
+        }
+      ],
+      "states": [
+        {
+          "id": "scroll",
+          "label": "Đang cuộn",
+          "flags": {
+            "speed": 58
+          }
+        }
+      ],
+      "channels": [
+        {
+          "target": "Vạch đứt",
+          "channel": "translateY",
+          "value": "y0 = −40 + (roadScroll mod 56), lặp mỗi 56px tới hết màn",
+          "when": "luôn khi state ∈ {drive, barrier}"
+        },
+        {
+          "target": "roadScroll",
+          "channel": "biến",
+          "value": "roadScroll += speed(t) · dt/1000",
+          "when": "speed = (58 + 4·(round−1)) · (1 + min(0.5, runSec/450 · 0.5))"
+        },
+        {
+          "target": "Lề + mặt đường + biên",
+          "channel": "static",
+          "value": "không đổi",
+          "when": "vẽ lại mỗi frame, không animation"
+        }
+      ]
+    },
+    {
+      "id": "hud",
+      "name": "HUD trên cùng",
+      "frame": {
+        "w": 480,
+        "h": 32
+      },
+      "lane_width": 96,
+      "facing": "Neo góc: xu trái trên, chặng giữa, mạng phải trên (đếm ngược từ mép phải). Không cuộn.",
+      "parts": [
+        {
+          "id": "hud_coin_text",
+          "name": "Số xu (+ bội combo)",
+          "file": "assets/images/parts/hud_coin_text.png",
+          "anchor": {
+            "x": 6,
+            "y": 8
+          },
+          "size": {
+            "w": 120,
+            "h": 8
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "#ffd24a",
+          "animation": {
+            "font": "Press Start 2P 8px",
+            "text": "“XU n” + “ x2/x3” khi combo",
+            "note": "combo = min(3, 1 + floor(streak/4))"
+          }
+        },
+        {
+          "id": "hud_round_text",
+          "name": "Chặng",
+          "file": "assets/images/parts/hud_round_text.png",
+          "anchor": {
+            "x": 220,
+            "y": 8
+          },
+          "size": {
+            "w": 40,
+            "h": 8
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "#00fc00",
+          "animation": {
+            "font": "Press Start 2P 8px",
+            "align": "center tại W/2",
+            "text": "“C” + round"
+          }
+        },
+        {
+          "id": "hud_life_pip",
+          "name": "Ô mạng (tile 16×8)",
+          "file": "assets/images/parts/hud_life_pip.png",
+          "anchor": {
+            "x": 408,
+            "y": 8
+          },
+          "size": {
+            "w": 16,
+            "h": 8
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "#ff5b7a / #3a1420",
+          "animation": {
+            "repeat": "3 ô, x = W − 24·(i+1) → 456, 432, 408",
+            "tintSwap": "còn mạng #ff5b7a · đã mất #3a1420",
+            "note": "part export trắng phẳng, tint theo trạng thái"
+          }
+        },
+        {
+          "id": "hud_shield_label",
+          "name": "Nhãn SHIELD",
+          "file": "assets/images/parts/hud_shield_label.png",
+          "anchor": {
+            "x": 6,
+            "y": 20
+          },
+          "size": {
+            "w": 56,
+            "h": 7
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "#7fd0ff",
+          "animation": {
+            "visible": "shield > 0",
+            "font": "Press Start 2P 7px"
+          }
+        },
+        {
+          "id": "hud_magnet_label",
+          "name": "Nhãn MAGNET",
+          "file": "assets/images/parts/hud_magnet_label.png",
+          "anchor": {
+            "x": 70,
+            "y": 20
+          },
+          "size": {
+            "w": 56,
+            "h": 7
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "#e05555",
+          "animation": {
+            "visible": "now < magnetUntil (5000ms)",
+            "font": "Press Start 2P 7px"
+          }
+        }
+      ],
+      "states": [
+        {
+          "id": "normal",
+          "label": "Bình thường",
+          "flags": {}
+        },
+        {
+          "id": "buffed",
+          "label": "Có khiên + nam châm",
+          "flags": {
+            "shield": true,
+            "magnet": true
+          }
+        }
+      ],
+      "channels": [
+        {
+          "target": "Ô mạng",
+          "channel": "tint",
+          "value": "i < lives ? #ff5b7a : #3a1420",
+          "when": "cập nhật ngay khi crash"
+        },
+        {
+          "target": "Nhãn SHIELD / MAGNET",
+          "channel": "visible",
+          "value": "shield > 0 · now < magnetUntil",
+          "when": "power-up đang hiệu lực"
+        },
+        {
+          "target": "Số xu",
+          "channel": "text",
+          "value": "cập nhật mỗi lần nhặt xu (+1) hoặc phá rào (+15)",
+          "when": "luôn"
+        },
+        {
+          "target": "Bội combo",
+          "channel": "text",
+          "value": "min(3, 1 + floor(streak/4)) — hiện “ xN” khi N > 1",
+          "when": "streak tăng mỗi lần đổi làn/vượt vật cản, reset khi crash"
+        }
+      ]
+    },
+    {
+      "id": "boss_ui",
+      "name": "UI mini-boss (đếm ngược + câu)",
+      "frame": {
+        "w": 480,
+        "h": 38
+      },
+      "lane_width": 96,
+      "facing": "Neo đáy màn: thanh đếm ngược tại y = 282, băng câu y = 292 cao 28. Chỉ hiện khi state = barrier.",
+      "parts": [
+        {
+          "id": "boss_bar_bg",
+          "name": "Rãnh đếm ngược",
+          "file": "assets/images/parts/boss_bar_bg.png",
+          "anchor": {
+            "x": 68,
+            "y": 0
+          },
+          "size": {
+            "w": 344,
+            "h": 8
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "rgba(0,0,0,.5)",
+          "animation": {
+            "static": true
+          }
+        },
+        {
+          "id": "boss_bar_fill",
+          "name": "Thanh đếm ngược",
+          "file": "assets/images/parts/boss_bar_fill.png",
+          "anchor": {
+            "x": 68,
+            "y": 0
+          },
+          "size": {
+            "w": 344,
+            "h": 8
+          },
+          "z": 2,
+          "origin": "top-left",
+          "color": "#3dff7a / #ffd60a / #ff4040",
+          "animation": {
+            "scaleX": "frac = max(0, (deadline − now) / 6500)",
+            "tintSwap": "frac > 0.5 #3dff7a · > 0.25 #ffd60a · còn lại #ff4040",
+            "note": "part export trắng phẳng 344×8, co bằng scaleX từ mép trái"
+          }
+        },
+        {
+          "id": "boss_banner",
+          "name": "Băng nền câu",
+          "file": "assets/images/parts/boss_banner.png",
+          "anchor": {
+            "x": 0,
+            "y": 10
+          },
+          "size": {
+            "w": 480,
+            "h": 28
+          },
+          "z": 1,
+          "origin": "top-left",
+          "color": "rgba(0,0,0,.82)",
+          "animation": {
+            "static": true
+          }
+        },
+        {
+          "id": "boss_say_label",
+          "name": "Nhãn SAY:",
+          "file": "assets/images/parts/boss_say_label.png",
+          "anchor": {
+            "x": 10,
+            "y": 18
+          },
+          "size": {
+            "w": 40,
+            "h": 8
+          },
+          "z": 2,
+          "origin": "top-left",
+          "color": "#7fd0ff",
+          "animation": {
+            "font": "Press Start 2P 8px",
+            "static": true
+          }
+        },
+        {
+          "id": "boss_sentence",
+          "name": "Câu cần nói",
+          "file": "assets/images/parts/boss_sentence.png",
+          "anchor": {
+            "x": 60,
+            "y": 17
+          },
+          "size": {
+            "w": 400,
+            "h": 10
+          },
+          "z": 2,
+          "origin": "top-left",
+          "color": "#ffe600",
+          "animation": {
+            "font": "Press Start 2P 10px",
+            "align": "center tại W/2 + 20",
+            "text": "pattern + từ chưa dùng, viết HOA"
+          }
+        }
+      ],
+      "states": [
+        {
+          "id": "safe",
+          "label": "Còn nhiều giờ (0.8)",
+          "flags": {
+            "frac": 0.8
+          }
+        },
+        {
+          "id": "warn",
+          "label": "Sắp hết (0.4)",
+          "flags": {
+            "frac": 0.4
+          }
+        },
+        {
+          "id": "crit",
+          "label": "Nguy cấp (0.15)",
+          "flags": {
+            "frac": 0.15
+          }
+        }
+      ],
+      "channels": [
+        {
+          "target": "Thanh đếm ngược",
+          "channel": "scaleX",
+          "value": "frac = max(0, (deadline − now)/6500)",
+          "when": "suốt mini-boss, tuyến tính"
+        },
+        {
+          "target": "Thanh đếm ngược",
+          "channel": "tint",
+          "value": "#3dff7a → #ffd60a (frac ≤ .5) → #ff4040 (frac ≤ .25)",
+          "when": "ngưỡng cứng, snap"
+        },
+        {
+          "target": "Cả rig",
+          "channel": "visible",
+          "value": "state === “barrier”",
+          "when": "ẩn hoàn toàn khi đang lái thường"
+        },
+        {
+          "target": "Câu",
+          "channel": "text",
+          "value": "pattern (bỏ “...”/“___”) + 1 từ chưa dùng của topic, toUpperCase",
+          "when": "spawnBarrier()"
+        }
+      ]
+    },
+    {
+      "id": "star",
+      "name": "Sao (title + nút vật lý)",
+      "frame": {
+        "w": 32,
+        "h": 32
+      },
+      "lane_width": 96,
+      "facing": "Một path 10 đỉnh (r ngoài 14, r trong 6.3), tâm khung. KHÔNG tách nhỏ hơn được — xem ghi chú bên dưới.",
+      "parts": [
+        {
+          "id": "star_shape",
+          "name": "Sao 5 cánh",
+          "file": "assets/images/parts/star_shape.png",
+          "anchor": {
+            "x": 2,
+            "y": 2
+          },
+          "size": {
+            "w": 28,
+            "h": 28
+          },
+          "z": 1,
+          "origin": "center",
+          "color": "#ffca28",
+          "animation": {
+            "static": true,
+            "note": "1 path duy nhất, không có sub-transform trong code"
+          }
+        }
+      ],
+      "states": [
+        {
+          "id": "idle",
+          "label": "Title",
+          "flags": {}
+        }
+      ],
+      "channels": [
+        {
+          "target": "Cả rig",
+          "channel": "static",
+          "value": "không animation ở màn title",
+          "when": "vẽ tại (W/2, 252)"
+        },
+        {
+          "target": "Chữ “PRESS THE STAR BUTTON”",
+          "channel": "visible",
+          "value": "floor(t/500) % 2 === 0",
+          "when": "nhấp nháy 500ms — text, không phải part"
+        }
+      ]
+    }
+  ],
+  "effects": [
+    {
+      "id": "flash_crash",
+      "name": "Flash va chạm",
+      "type": "rect-fade",
+      "params": {
+        "rect": "carX − CAR_W/2 − 6, CAR_Y − 6, CAR_W + 12, CAR_H + 12",
+        "color": "#ffffff",
+        "life_ms": 160,
+        "alpha": "(until − t)/160"
+      }
+    },
+    {
+      "id": "flash_smash",
+      "name": "Flash phá rào",
+      "type": "rect-fade",
+      "params": {
+        "rect": "ROAD_L, barrier.y − 6, 288, 44",
+        "color": "#ffffff",
+        "life_ms": 160,
+        "alpha": "(until − t)/160"
+      }
+    },
+    {
+      "id": "float_text",
+      "name": "Float text (+1 / +15 XU / SHIELD / MAGNET)",
+      "type": "text-rise",
+      "params": {
+        "font": "Press Start 2P 8px",
+        "align": "center",
+        "vy_px_s": -18,
+        "life_ms": 900,
+        "alpha": "life (1 → 0 tuyến tính)",
+        "colors": {
+          "coin": "#ffe08a",
+          "shield": "#7fd0ff",
+          "magnet": "#e05555"
+        }
+      }
+    },
+    {
+      "id": "invincible_blink",
+      "name": "Nhấp nháy bất tử",
+      "type": "visibility-toggle",
+      "params": {
+        "duration_ms": 1200,
+        "period_ms": 240,
+        "rule": "ẩn xe khi floor(t/120) % 2 === 0",
+        "note": "game ẨN HẲN frame, không hạ alpha"
+      }
+    },
+    {
+      "id": "magnet_pull",
+      "name": "Vùng hút nam châm",
+      "type": "area-collect",
+      "params": {
+        "duration_ms": 5000,
+        "window_y": "[CAR_Y − 30, CAR_Y + 60]",
+        "lanes": "cả 3",
+        "effect": "xu bị thu ngay, phát sfx coin",
+        "note": "không có hạt — chỉ là vùng thu"
+      }
+    },
+    {
+      "id": "led_strip",
+      "name": "LED vật lý trên vỏ máy (CSS, ngoài canvas)",
+      "type": "css-glow",
+      "params": {
+        "base": "drive #7cc7ef · barrier #c07bff",
+        "glow": "box-shadow 0 0 14px 2px color",
+        "pulses": {
+          "lane_change": "#3dff7a 180ms",
+          "crash": "#ff5544 400ms",
+          "smash": "#c07bff 400ms",
+          "shield": "#7fd0ff 250–300ms",
+          "magnet": "#e05555 250ms",
+          "near_miss": "#ffb020 250ms"
+        }
+      }
+    },
+    {
+      "id": "mic_meter",
+      "name": "Thanh mức mic (CSS, ngoài canvas)",
+      "type": "css-bar",
+      "params": {
+        "width_pct": "min(100, peak × 1.6)",
+        "gradient": "#57c07f → #ffd24a → #e05555",
+        "transition": "width .06s linear",
+        "source": "AnalyserNode fftSize 512, getByteTimeDomainData"
+      }
+    },
+    {
+      "id": "not_present",
+      "name": "KHÔNG có trong game này",
+      "type": "none",
+      "params": {
+        "missing": "particle burst · screen shake · fog of war · vignette · parallax",
+        "note": "Word Racer v2 chỉ dùng flash rect + float text + blink; đừng port hệ particle của Word Maze sang mà chưa hỏi."
+      }
+    }
+  ],
+  "sprites": [
+    {
+      "id": "screen_drive",
+      "name": "Màn chơi — đang lái",
+      "group": "screen",
+      "note": "Ghép từ rig road + lane_sign ×3 + coin + obstacle + shield + car + hud, đúng toạ độ world.",
+      "size": {
+        "w": 480,
+        "h": 320
+      },
+      "file": "assets/images/sprites/screen_drive.png",
+      "note_export": "PNG là 1 frame tĩnh tại t = 1240ms"
+    },
+    {
+      "id": "screen_barrier",
+      "name": "Màn chơi — mini-boss",
+      "group": "screen",
+      "note": "Rào khổng lồ chặn 3 làn + đồng hồ đếm ngược + băng câu cần nói.",
+      "size": {
+        "w": 480,
+        "h": 320
+      },
+      "file": "assets/images/sprites/screen_barrier.png",
+      "note_export": "PNG là 1 frame tĩnh tại t = 1240ms"
+    },
+    {
+      "id": "screen_title",
+      "name": "Màn title",
+      "group": "screen",
+      "note": "Chữ Press Start 2P + rig star. Dòng “PRESS THE STAR BUTTON” nhấp nháy 500ms.",
+      "size": {
+        "w": 480,
+        "h": 320
+      },
+      "file": "assets/images/sprites/screen_title.png",
+      "note_export": "PNG là 1 frame tĩnh tại t = 1240ms"
+    },
+    {
+      "id": "screen_over",
+      "name": "Màn game over + top 5",
+      "group": "screen",
+      "note": "Bảng xếp hạng all-time; dòng của người chơi tô #ffe600.",
+      "size": {
+        "w": 480,
+        "h": 320
+      },
+      "file": "assets/images/sprites/screen_over.png",
+      "note_export": "PNG là 1 frame tĩnh tại t = 1240ms"
+    },
+    {
+      "id": "sheet_items",
+      "name": "Dải item (xu · khiên · nam châm · 3 vật cản)",
+      "group": "sheet",
+      "note": "Tham chiếu tỉ lệ giữa các item — không dùng để animate.",
+      "size": {
+        "w": 300,
+        "h": 48
+      },
+      "file": "assets/images/sprites/sheet_items.png",
+      "note_export": "PNG là 1 frame tĩnh tại t = 1240ms"
+    },
+    {
+      "id": "sheet_car_states",
+      "name": "Xe — 3 trạng thái",
+      "group": "sheet",
+      "note": "drive · shield · bất tử (frame đang ẩn).",
+      "size": {
+        "w": 180,
+        "h": 60
+      },
+      "file": "assets/images/sprites/sheet_car_states.png",
+      "note_export": "PNG là 1 frame tĩnh tại t = 1240ms"
+    }
+  ],
+  "sounds": [
+    {
+      "id": "start",
+      "label": "Bắt đầu lượt",
+      "duration_ms": 320,
+      "trigger": "bấm ⭐",
+      "file": "assets/sounds/start.wav",
+      "format": "WAV 16-bit mono 44.1kHz"
+    },
+    {
+      "id": "swoosh",
+      "label": "Đổi làn (nói trúng từ)",
+      "duration_ms": 180,
+      "trigger": "changeLane()",
+      "file": "assets/sounds/swoosh.wav",
+      "format": "WAV 16-bit mono 44.1kHz"
+    },
+    {
+      "id": "coin",
+      "label": "Nhặt xu",
+      "duration_ms": 120,
+      "trigger": "collectCoin()",
+      "file": "assets/sounds/coin.wav",
+      "format": "WAV 16-bit mono 44.1kHz"
+    },
+    {
+      "id": "pass",
+      "label": "Vượt qua vật cản",
+      "duration_ms": 100,
+      "trigger": "obs.y > CAR_Y + CAR_H",
+      "file": "assets/sounds/pass.wav",
+      "format": "WAV 16-bit mono 44.1kHz"
+    },
+    {
+      "id": "powerup",
+      "label": "Nhặt khiên / nam châm",
+      "duration_ms": 280,
+      "trigger": "chạm item bonus",
+      "file": "assets/sounds/powerup.wav",
+      "format": "WAV 16-bit mono 44.1kHz"
+    },
+    {
+      "id": "shieldpop",
+      "label": "Khiên đỡ va chạm",
+      "duration_ms": 200,
+      "trigger": "hitObstacle() khi shield > 0",
+      "file": "assets/sounds/shieldpop.wav",
+      "format": "WAV 16-bit mono 44.1kHz"
+    },
+    {
+      "id": "warn",
+      "label": "Mini-boss xuất hiện",
+      "duration_ms": 300,
+      "trigger": "spawnBarrier()",
+      "file": "assets/sounds/warn.wav",
+      "format": "WAV 16-bit mono 44.1kHz"
+    },
+    {
+      "id": "smash",
+      "label": "Phá rào (nói đúng câu)",
+      "duration_ms": 360,
+      "trigger": "smashBarrier()",
+      "file": "assets/sounds/smash.wav",
+      "format": "WAV 16-bit mono 44.1kHz"
+    },
+    {
+      "id": "crash",
+      "label": "Va chạm — mất 1 mạng",
+      "duration_ms": 360,
+      "trigger": "crash()",
+      "file": "assets/sounds/crash.wav",
+      "format": "WAV 16-bit mono 44.1kHz"
+    },
+    {
+      "id": "miss",
+      "label": "Near-miss (gần đúng)",
+      "duration_ms": 180,
+      "trigger": "detectNearMiss ≤ 2 edit-distance",
+      "file": "assets/sounds/miss.wav",
+      "format": "WAV 16-bit mono 44.1kHz"
+    },
+    {
+      "id": "over",
+      "label": "Game over",
+      "duration_ms": 550,
+      "trigger": "hết 3 mạng",
+      "file": "assets/sounds/over.wav",
+      "format": "WAV 16-bit mono 44.1kHz"
+    },
+    {
+      "id": "record",
+      "label": "Phá kỷ lục xu",
+      "duration_ms": 500,
+      "trigger": "coins ≥ bestCoins lúc game over",
+      "file": "assets/sounds/record.wav",
+      "format": "WAV 16-bit mono 44.1kHz"
+    },
+    {
+      "id": "music_drive_loop",
+      "label": "Nhạc nền DRIVE (16 step × 185ms)",
+      "duration_ms": 3100,
+      "trigger": "state = drive, lặp vô hạn",
+      "file": "assets/sounds/music_drive_loop.wav",
+      "format": "WAV 16-bit mono 44.1kHz"
+    },
+    {
+      "id": "music_barrier_loop",
+      "label": "Nhạc nền MINI-BOSS (16 step × 165ms)",
+      "duration_ms": 2800,
+      "trigger": "state = barrier, lặp vô hạn",
+      "file": "assets/sounds/music_barrier_loop.wav",
+      "format": "WAV 16-bit mono 44.1kHz"
+    }
+  ]
+}

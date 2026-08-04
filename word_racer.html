@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Racer — Coin Rush (Pika v2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --shell:#eef1f5; --shell-dk:#d7dde5; --shell-edge:#b9c2cd;
+    --ink:#243040; --ink-soft:#5b6b7e;
+    --accent:#4aa8e0; --accent-dk:#2f7fb2;
+    --good:#19b364; --bad:#e05555; --star:#ffca28;
+    font-size:16px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Nunito',system-ui,sans-serif; color:var(--ink);
+    background:linear-gradient(180deg,#f6f8fa 0%,#e8edf2 100%);
+    min-height:100vh; padding:24px 12px 48px;
+  }
+  .wrap{max-width:880px; margin:0 auto;}
+  header{margin-bottom:16px;}
+  .eyebrow{font-family:'Press Start 2P',monospace; font-size:.55rem; letter-spacing:.14em; color:var(--accent-dk); margin-bottom:8px;}
+  h1{font-size:1.45rem; font-weight:800;}
+  header p{color:var(--ink-soft); font-size:.92rem; margin-top:4px; max-width:64ch;}
+
+  .banner{
+    border-radius:12px; padding:10px 14px; font-size:.88rem; margin-bottom:14px;
+    background:#fff7e8; border:1px solid #eed9a8; color:#7a5b16; display:none;
+  }
+  .banner.err{background:#fdecec; border-color:#f0bcbc; color:#8f2727;}
+  .banner.ok{background:#e9f8ef; border-color:#b9e5c8; color:#1c6b3d;}
+  .banner b{font-weight:800;}
+  .banner code{background:rgba(0,0,0,.06); padding:1px 5px; border-radius:5px;}
+
+  .device{
+    background:linear-gradient(180deg,var(--shell) 0%,var(--shell-dk) 100%);
+    border:1px solid var(--shell-edge);
+    border-radius:28px; padding:18px 18px 16px;
+    box-shadow:0 14px 34px rgba(30,45,60,.16), inset 0 1px 0 #fff;
+    margin-bottom:20px;
+  }
+  .led-strip{
+    height:8px; border-radius:6px; margin:0 auto 12px; width:42%;
+    background:#9fb6c6; transition:background .18s, box-shadow .18s;
+  }
+  .led-strip.on{box-shadow:0 0 14px 2px var(--led-glow,#7fd);}
+  .screen-frame{background:#101418; border-radius:14px; padding:10px; box-shadow:inset 0 3px 10px rgba(0,0,0,.65);}
+  canvas#game{
+    display:block; width:100%; aspect-ratio:480/320;
+    background:#000; border-radius:6px;
+    image-rendering:pixelated; image-rendering:crisp-edges;
+    touch-action:manipulation;
+  }
+  .btn-row{display:flex; align-items:center; justify-content:center; gap:16px; margin-top:16px;}
+  .star-btn{
+    width:84px; height:84px; border-radius:50%; border:none; cursor:pointer;
+    background:radial-gradient(circle at 32% 28%, #ffe082, var(--star) 55%, #f5a800);
+    box-shadow:0 6px 0 #c98a00, 0 10px 18px rgba(0,0,0,.22), inset 0 2px 4px rgba(255,255,255,.7);
+    font-size:2.4rem; line-height:1; color:#8a5c00;
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .06s;
+  }
+  .star-btn:active{transform:translateY(4px); box-shadow:0 2px 0 #c98a00, 0 4px 8px rgba(0,0,0,.22);}
+  .star-btn:disabled{filter:grayscale(.5); opacity:.7; cursor:default;}
+  .star-btn:focus-visible{outline:3px solid var(--accent); outline-offset:3px;}
+  .side-col{display:flex; flex-direction:column; gap:6px; align-items:flex-start; width:150px;}
+  .meter{
+    width:150px; height:12px; border-radius:8px; background:#c8d2dc; overflow:hidden;
+    box-shadow:inset 0 1px 3px rgba(0,0,0,.25);
+  }
+  .meter > div{height:100%; width:0%; background:linear-gradient(90deg,#57c07f,#ffd24a,#e05555); transition:width .06s linear;}
+  .vstatus{font-size:.78rem; color:var(--ink-soft);}
+  .heard{
+    font-family:'Press Start 2P',monospace; font-size:.55rem; color:var(--accent-dk);
+    min-height:1.2em; text-align:center; margin-top:10px; word-break:break-word;
+  }
+
+  h2{font-size:1.05rem; font-weight:800; margin:26px 0 10px;}
+  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px;}
+  .card{background:#fff; border:1px solid #dfe6ec; border-radius:14px; padding:12px 14px;}
+  .card .k{font-size:.72rem; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.05em;}
+  .card .v{font-size:1.5rem; font-weight:800; margin-top:2px;}
+  .card .sub{font-size:.75rem; color:var(--ink-soft);}
+  .v.voice{color:var(--good);} .v.miss{color:var(--bad);}
+  .table-scroll{max-height:260px; overflow:auto; border-radius:14px; border:1px solid #dfe6ec;}
+  table{width:100%; border-collapse:collapse; background:#fff; font-size:.85rem;}
+  th,td{padding:8px 12px; text-align:left; border-bottom:1px solid #eef2f6;}
+  th{background:#f4f7fa; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); position:sticky; top:0;}
+  tr:last-child td{border-bottom:none;}
+  td.ok{color:var(--good); font-weight:700;} td.esc{color:var(--bad); font-weight:700;}
+  .note{font-size:.8rem; color:var(--ink-soft); margin-top:10px; max-width:74ch;}
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">PIKA · WORD RACER · COIN RUSH · v2 · LỘ TRÌNH PRE-A1</div>
+    <h1>Word Racer — đua xe gom xu bằng giọng nói</h1>
+    <p>Mỗi làn mang một <b>từ vựng</b> — <b>nói to từ của làn nào</b> để lái xe sang làn đó: né vật cản và <b>gom xu</b> (xu thường rơi ở làn khác, muốn ăn phải đổi làn = phải nói). Nhặt <b>khiên</b> (đỡ 1 va chạm) và <b>nam châm</b> (tự hút xu). Thỉnh thoảng một <b>rào khổng lồ (mini-boss)</b> chặn cả 3 làn: nói <b>cả câu</b> trước khi hết giờ để phá (+15 xu). Càng chơi càng nhanh (có trần). Bấm ⭐ để bắt đầu.</p>
+  </header>
+
+  <div class="banner" id="banner"></div>
+
+  <div class="device">
+    <div class="led-strip" id="led"></div>
+    <div class="screen-frame">
+      <canvas id="game" width="480" height="320" aria-label="Màn hình game Word Racer"></canvas>
+    </div>
+    <div class="btn-row">
+      <div class="side-col">
+        <div class="meter" title="Mức âm lượng mic"><div id="meterFill"></div></div>
+        <div class="vstatus" id="vstatus">Mic: chưa bật</div>
+      </div>
+      <button class="star-btn" id="btnStar" aria-label="Bắt đầu">★</button>
+      <div class="side-col"><div class="vstatus" id="musicStatus">♪ nhạc: tắt</div></div>
+    </div>
+    <div class="heard" id="heard"></div>
+  </div>
+
+  <h2>Assessment signal (mô phỏng <code>Engine.report_result</code>)</h2>
+  <div class="cards">
+    <div class="card"><div class="k">Xu (thước đo chính)</div><div class="v" id="mCoins" style="color:#d9a300">0</div><div class="sub" id="mCoinRec">kỷ lục 0</div></div>
+    <div class="card"><div class="k">Điểm / High score</div><div class="v" id="mScore">0</div><div class="sub" id="mHi">HI 0</div></div>
+    <div class="card"><div class="k">Chặng đạt được</div><div class="v" id="mWave">–</div><div class="sub">1 chặng = 1 chủ đề</div></div>
+    <div class="card"><div class="k">Lần đổi làn (nói từ)</div><div class="v voice" id="mLane">0</div><div class="sub">lặp 3 từ nhiều lần/chặng</div></div>
+    <div class="card"><div class="k">Rào phá (nói câu)</div><div class="v voice" id="mSent">0</div><div class="sub">mini-boss cột D + E</div></div>
+    <div class="card"><div class="k">Quãng đường</div><div class="v" id="mDist">0m</div><div class="sub">nhanh dần, có trần</div></div>
+    <div class="card"><div class="k">Va chạm / hết giờ rào</div><div class="v miss" id="mCrash">0</div><div class="sub">mất mạng (khiên đỡ 1)</div></div>
+    <div class="card"><div class="k">Phản xạ phá rào TB</div><div class="v" id="mRt">–</div><div class="sub">hiện câu → nói trúng</div></div>
+  </div>
+
+  <h2>STT &amp; tracking <span style="font-weight:400;font-size:.8rem;color:#5b6b7e">— bám <code>Framework đo lường</code></span></h2>
+  <div class="cards">
+    <div class="card"><div class="k">Nói trượt (chưa match)</div><div class="v miss" id="mUnmatched">0</div><div class="sub">có tiếng nhưng không khớp target</div></div>
+    <div class="card"><div class="k">Near-miss (gần đúng)</div><div class="v" id="mNearMiss" style="color:#d98800">0</div><div class="sub">edit-distance ≤ 2 với target</div></div>
+    <div class="card"><div class="k">Tự sửa (self-correct)</div><div class="v voice" id="mSelfCorrect">0</div><div class="sub">near-miss → sau đó nói đúng</div></div>
+    <div class="card"><div class="k">Nói/phút (speech-per-min)</div><div class="v" id="mSpm" style="color:#845bc7">–</div><div class="sub">bảo vệ learning loop</div></div>
+  </div>
+  <h2>Tốc độ &amp; độ vừa sức <span style="font-weight:400;font-size:.8rem;color:#5b6b7e">— tốc độ có đang hợp player không?</span></h2>
+  <div class="cards">
+    <div class="card"><div class="k">Tốc độ hiện tại</div><div class="v" id="mSpeed" style="color:#2f7fb2">–</div><div class="sub">px/s · chậm lúc đầu, nhanh dần rất nhẹ</div></div>
+    <div class="card"><div class="k">Nhặt được xu</div><div class="v voice" id="mCoinPct">–</div><div class="sub">% xu bắt kịp — thấp = quá nhanh</div></div>
+    <div class="card"><div class="k">Biên né trung bình</div><div class="v" id="mDodge" style="color:#845bc7">–</div><div class="sub">giây né trước va chạm — càng nhỏ càng gấp</div></div>
+    <div class="card"><div class="k">Va chạm / phút</div><div class="v miss" id="mCrashMin">–</div><div class="sub">cao = đang quá khó</div></div>
+  </div>
+  <p class="note" style="margin-top:10px">Cách đọc: nếu <b>Nhặt được xu</b> thấp, <b>Biên né TB</b> nhỏ (gần 0s = bé toàn né sát nút / trượt), hoặc <b>Va chạm/phút</b> cao → tốc độ đang <b>quá nhanh</b> so với bé; ngược lại biên né lớn + gần như không va chạm → có thể cho nhanh hơn. Event <code>speed_sample</code> (mỗi 2s) và <code>life_lost</code> (kèm tốc độ lúc chết) trong JSON cho thấy tốc độ ở đúng thời điểm bé gặp khó.</p>
+
+  <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:12px">
+    <label style="display:flex;gap:7px;align-items:center;font-size:.86rem;color:#243040;cursor:pointer">
+      <input type="checkbox" id="nmToggle" checked> Bật feedback near-miss (flash + "Almost!")
+    </label>
+    <button id="btnExport" style="font-family:inherit;font-weight:700;font-size:.85rem;border:1px solid #b9c2cd;background:#fff;color:#243040;border-radius:10px;padding:8px 14px;cursor:pointer">⬇︎ Xuất dữ liệu phiên (JSON)</button>
+    <span style="font-size:.78rem;color:#5b6b7e">event stream + learner-model per-word để đo learning/STT cross-session</span>
+  </div>
+
+  <h2>Log theo mục tiêu</h2>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>#</th><th>Chặng</th><th>Mục tiêu</th><th>Loại</th><th>Phản xạ</th><th>Kết quả</th><th>Máy nghe được</th></tr></thead>
+      <tbody id="logBody"><tr><td colspan="7" style="color:#8a97a6">Chưa có dữ liệu — bấm ⭐ để bắt đầu.</td></tr></tbody>
+    </table>
+  </div>
+
+  <h2>Mechanics &amp; dụng ý thiết kế</h2>
+  <p class="note" style="margin-bottom:14px">Vì sao mỗi cơ chế tồn tại — nguyên tắc xuyên suốt: <b>mọi thứ vui thêm vào (xu, khiên, nam châm, mini-boss) đều phải khiến trẻ nói nhiều hơn, không thay thế việc nói.</b> Racer là game duy nhất trong series ép <b>lặp lại cùng 3 từ nhiều lần</b> trong một chặng — spaced repetition ngay trong nhịp chơi.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">
+    <div class="card"><div style="font-weight:800;margin-bottom:4px">🗣️ 3 làn = 3 từ</div><div style="font-size:.86rem;color:#5b6b7e">Mỗi làn một từ (cố định trong cả chặng); nói từ = lái sang làn đó.<br><b style="color:#243040">Dụng ý:</b> lặp cùng bộ từ nhiều lần → nhớ sâu. Giữ identity học tập riêng của Racer.</div></div>
+    <div class="card"><div style="font-weight:800;margin-bottom:4px">🪙 Xu rải lệch làn</div><div style="font-size:.86rem;color:#5b6b7e">Xu là thước đo điểm chính, thường rơi ở làn <i>khác</i> làn xe đang chạy.<br><b style="color:#243040">Dụng ý:</b> muốn ăn xu phải đổi làn = phải nói thêm một từ. Mỗi đồng xu gián tiếp là một lần phát âm (kiểu coin-trail của Subway Surfers, nhưng phục vụ learning loop).</div></div>
+    <div class="card"><div style="font-weight:800;margin-bottom:4px">🛡️ Khiên · 🧲 Nam châm</div><div style="font-size:.86rem;color:#5b6b7e">Khiên (hiếm ~5%) đỡ miễn phí 1 va chạm; nam châm (hiếm ~7%) tự hút xu cả 3 làn trong 5s.<br><b style="color:#243040">Dụng ý:</b> spike phần thưởng tạo cao trào; nam châm là "nghỉ giải lao có chủ đích", để hiếm nên không làm giảm số lần nói.</div></div>
+    <div class="card"><div style="font-weight:800;margin-bottom:4px">👑 Mini-boss (nói cả câu)</div><div style="font-size:.86rem;color:#5b6b7e">Rào khổng lồ chặn cả 3 làn, không né được — nói <b>cả câu</b> (cột D + E) trong thời gian đếm ngược để phá (+15 xu), không kịp thì mất 1 mạng nhưng vẫn sang chặng mới.<br><b style="color:#243040">Dụng ý:</b> ép luyện <b>câu</b> chứ không chỉ từ đơn; khoảnh khắc anh hùng cuối mỗi chặng. (Ghi chú test: đồng hồ đang khá gắt với Pre-A1 chưa sõi đọc — cân nhắc đọc mẫu câu trước hoặc co giãn theo trình độ.)</div></div>
+    <div class="card"><div style="font-weight:800;margin-bottom:4px">❤️ 3 mạng + bất tử ngắn · 🐢 chậm → nhanh dần nhẹ</div><div style="font-size:.86rem;color:#5b6b7e">Tune cho A1: khởi đầu <b>chậm</b> (nhiều thời gian phản ứng), <b>nhanh dần rất nhẹ theo thời gian</b> (không giật cục), có trần. Va chạm mất 1 mạng, ~1.2s bất tử để không mất dồn; mini-boss xuất hiện muộn (9–11 đợt) và cho ~6.5s để nói câu.<br><b style="color:#243040">Dụng ý:</b> giữ căng thẳng vừa đủ cho bé mới bắt đầu; nhóm thẻ "Tốc độ &amp; độ vừa sức" phía dưới cho biết tốc độ có đang hợp bé không để tinh chỉnh.</div></div>
+    <div class="card"><div style="font-weight:800;margin-bottom:4px">📊 Best &amp; tracking</div><div style="font-size:.86rem;color:#5b6b7e">Kỷ lục xu &amp; điểm lưu localStorage. Ghi event stream (kể cả câu nói trượt), learner-model per-word, xuất JSON.<br><b style="color:#243040">Dụng ý:</b> đo <i>học được thật</i> + <i>STT có nghe đúng không</i>; đặc biệt đo <b>số lần nói/phút</b> để chắc mechanics giải trí không làm loãng việc nói.</div></div>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+// ================= Nội dung Pre-A1 (từ CSV lộ trình) =================
+const CURRICULUM = [{"topic":"Weather","q":"What's the weather like?","pattern":"It is...","words":["sunny","rainy","windy","cloudy","snowy","foggy"]},{"topic":"School Objects","q":"What's this?","pattern":"This is...","words":["a ruler","an eraser","a book","a pencil","a bag","a crayon"]},{"topic":"Clothes","q":"What do you have?","pattern":"I have...","words":["a hat","a T-shirt","a jacket","a dress","trousers","shoes"]},{"topic":"Fruits","q":"What do you like?","pattern":"I like...","words":["a banana","an apple","an orange","a mango","a lime","a coconut"]},{"topic":"Home","q":"What's this?","pattern":"This is...","words":["a bed","a fridge","a desk","a lamp","a window","a door"]},{"topic":"Sports","q":"What sports do you like?","pattern":"I like...","words":["football","basketball","badminton","swimming","cycling","running"]},{"topic":"Nature","q":"What do you see?","pattern":"I see...","words":["a lake","a river","a forest","a beach","a mountain","a desert"]},{"topic":"Technology","q":"What's it?","pattern":"It is...","words":["a radio","a camera","a speaker","a smartphone","a laptop","a keyboard"]},{"topic":"Transportation","q":"What's it?","pattern":"It's...","words":["a bike","a plane","a bus","a car","a boat","a truck"]},{"topic":"Animals","q":"What's that?","pattern":"That is...","words":["a cat","a dog","a mouse","a bear","a lion","a monkey"]},{"topic":"Hobby","q":"What do you like doing?","pattern":"I like...","words":["drawing","singing","dancing","reading","cooking","shopping"]},{"topic":"How I Feel","q":"How are you?","pattern":"I am ___.","words":["happy","sad","tired","hungry","fine","sick"]},{"topic":"Face Parts","q":"What is this?","pattern":"This is my ___.","words":["nose","mouth","ear","eye","hair","face"]},{"topic":"Classroom Colours","q":"What colour is your pen?","pattern":"My pen is ___.","words":["red","blue","green","yellow","orange","black"]},{"topic":"Food I Like","q":"What food do you like?","pattern":"I like ___.","words":["rice","noodles","soup","sausage","eggs","cake"]},{"topic":"Toys I Like","q":"What toys do you like?","pattern":"I like ___.","words":["dolls","toy cars","kites","balls","robots","balloons"]},{"topic":"Rooms","q":"What room is this?","pattern":"This is the ___.","words":["kitchen","bathroom","bedroom","living room","dining room","garden"]},{"topic":"Drinks I Like","q":"What do you like to drink?","pattern":"I like ___.","words":["water","milk","juice","tea","juice milk","soda"]},{"topic":"Vegetables","q":"What vegetables is this?","pattern":"This is a ___.","words":["carrot","potato","tomato","cucumber","corn","onion"]},{"topic":"Size & Shape","q":"What does it look like?","pattern":"It is ___.","words":["big","small","long","short","round","square"]},{"topic":"Games I Like","q":"What games do you like?","pattern":"I like ___.","words":["hide and seek","tag","racing","chess","skipping","catching"]},{"topic":"Sweet Treats","q":"What are you eating?","pattern":"I am eating ___.","words":["candy","cake","chocolate","ice cream","cookies","popcorn"]},{"topic":"Sea Animals","q":"What is in the water?","pattern":"It is ___.","words":["a fish","a shark","a dolphin","a turtle","a crab","a whale"]},{"topic":"Places to Go","q":"Where do you want to go?","pattern":"Let's go to ___.","words":["the park","the zoo","the beach","the school","the shop","the library"]}];
+
+// ================= Cấu hình (giữ hình học cũ + thêm mechanics mới) =================
+const W=480, H=320;
+const ROAD_L=96, ROAD_R=384;
+const LANE_X=[144,240,336];                 // tâm 3 làn
+const LANE_W=(ROAD_R-ROAD_L)/3;
+const CAR_W=32, CAR_H=44, CAR_Y=246;
+const OB_W=34, OB_H=30;
+// Tune cho A1: chậm hẳn lúc đầu, nhanh dần RẤT NHẸ theo thời gian chơi (không giật cục theo chặng)
+const BASE_SPEED=58, SPEED_PER_ROUND=4;     // px/s vật cản trôi xuống (chậm + bước tăng/chặng nhỏ)
+const SPEED_RAMP_MAX=0.5, SPEED_RAMP_SEC=450; // theo thời gian: +0→+50% trải đều trong 450s (~7.5 phút)
+const BARRIER_SPEED_K=0.5;                  // rào trôi chậm (chỉ để hiển thị)
+const BARRIER_TIME_MS=6500;                 // hạn nói cả câu (mini-boss) — nới rộng cho trẻ đọc kịp
+const WAVE_MIN=1100, WAVE_MAX=2100;         // ms giữa 2 đợt spawn (thưa hơn -> đỡ dồn dập)
+const MINIBOSS_EVERY_MIN=9, MINIBOSS_EVERY_RAND=3;  // 9–11 đợt → mini-boss (xuất hiện muộn hơn)
+const MAX_LIVES=3, INVINCIBLE_MS=1200, MAGNET_MS=5000;
+const MATCH_LOCK_MS=420;
+const ALL_TIME=[["MINH AN",4210],["BAO NGOC",3650],["GIA HAN",2980],["TUAN KIET",2410],["KHANH VY",1875]];
+const BEST_KEY="pika_wordracer_best", COIN_KEY="pika_wordracer_bestcoins";
+
+// ================= Runtime state =================
+let state="title";                          // title|drive|barrier|over
+let score=0, coins=0, round=1, lives=MAX_LIVES, streak=0, hiscore=0, bestCoins=0;
+let lane=1, carX=LANE_X[1], laneWords=[];   // laneWords[i] = {word,core}
+let items=[], barrier=null;                 // items: {kind:'coin'|'obs'|'shield'|'magnet', lane, y, passed?, vk?}
+let waveCount=0, nextBarrierAt=6, nextSpawn=0, invUntil=0, magnetUntil=0, roadScroll=0;
+let runMs=0;                                // thời gian đã lái (ms) — dùng cho tăng tốc dần + tracking
+let shield=0;
+let flashes=[], floats=[], msg="", msgUntil=0;
+let matchLockUntil=0, lastMatchedCore="";
+let maxRound=0, killLog=[], laneSays=0, sentHits=0, crashes=0, lastHeard="";
+let lbRows=[], lbRank=0;
+
+// ================= Tracking (theo Framework đo lường) =================
+const GAME_ID="word_racer";
+let sessionId="", sessionEvents=[], sessionStartTs=0;
+let unmatched=0, nearMissCount=0, selfCorrect=0, pendingNearMiss="", missRun=0;
+// speed-fit tracking: có đang vừa sức không?
+let coinsSpawned=0, coinsCollected=0, dodgeMargins=[], lastSpeedSampleAt=0;
+let nearMissEnabled=true, learner={};
+function loadLearner(){ try{ learner=JSON.parse(localStorage.getItem("pika_learner_"+GAME_ID)||"{}")||{}; }catch(e){ learner={}; } }
+function saveLearner(){ try{ localStorage.setItem("pika_learner_"+GAME_ID,JSON.stringify(learner)); }catch(e){} }
+function lm(wid){ return learner[wid]||(learner[wid]={exposures:0,first_try_hits:0,avg_rt:0,last_rt:0,last_seen_ts:0,escape_count:0,near_miss_count:0}); }
+function track(type,data){ sessionEvents.push(Object.assign({type,ts:Date.now()},data)); }
+function markHit(wid,rt){
+  const m=lm(wid); m.exposures++; if(missRun===0)m.first_try_hits++;
+  m.avg_rt=Math.round((m.avg_rt*(m.exposures-1)+rt)/m.exposures); m.last_rt=rt; m.last_seen_ts=Date.now();
+  track("target_result",{word_id:wid,result:"hit",attempts:missRun+1,rt_ms:rt});
+  missRun=0;
+}
+
+const cv=document.getElementById("game"), cx=cv.getContext("2d");
+const now=()=>performance.now();
+const $=id=>document.getElementById(id);
+const topicOf=r=>CURRICULUM[(r-1)%CURRICULUM.length];
+
+// ================= Banner =================
+function banner(kind,html){ const b=$("banner"); b.className="banner "+kind; b.innerHTML=html; b.style.display="block"; }
+function hideBanner(){ $("banner").style.display="none"; }
+
+// ================= Audio: SFX + nhạc =================
+let AC=null; const lastPlay={};
+function ac(){ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==="suspended")AC.resume(); return AC; }
+function tone(type,f0,f1,dur,when=0,vol=0.18){
+  const a=ac(), t0=a.currentTime+when, o=a.createOscillator(), g=a.createGain();
+  o.type=type; o.frequency.setValueAtTime(f0,t0);
+  if(f1&&f1!==f0) o.frequency.exponentialRampToValueAtTime(f1,t0+dur);
+  g.gain.setValueAtTime(vol,t0); g.gain.exponentialRampToValueAtTime(0.001,t0+dur);
+  o.connect(g).connect(a.destination); o.start(t0); o.stop(t0+dur+0.02);
+}
+function noiseBurst(dur,vol=0.22){
+  const a=ac(), t0=a.currentTime, n=a.sampleRate*dur, buf=a.createBuffer(1,n,a.sampleRate), d=buf.getChannelData(0);
+  for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
+  const s=a.createBufferSource(); s.buffer=buf;
+  const f=a.createBiquadFilter(); f.type="lowpass"; f.frequency.setValueAtTime(2400,t0); f.frequency.exponentialRampToValueAtTime(200,t0+dur);
+  const g=a.createGain(); g.gain.setValueAtTime(vol,t0); g.gain.exponentialRampToValueAtTime(0.001,t0+dur);
+  s.connect(f).connect(g).connect(a.destination); s.start(t0);
+}
+const SFX={
+  swoosh:()=>tone("sine",300,900,0.12,0,0.16),
+  coin  :()=>tone("square",880,1320,0.06,0,0.10),
+  powerup:()=>[523,659,784,1046].forEach((f,i)=>tone("square",f,f,0.07,i*0.05,0.11)),
+  shieldpop:()=>tone("triangle",600,900,0.15,0,0.14),
+  pass  :()=>tone("square",880,880,0.05,0,0.08),
+  crash :()=>{noiseBurst(0.25,0.28); tone("square",120,60,0.3,0,0.2);},
+  smash :()=>{noiseBurst(0.2,0.2); [523,659,784].forEach((f,i)=>tone("square",f,f,0.08,0.05+i*0.08,0.14));},
+  warn  :()=>[440,440].forEach((f,i)=>tone("square",f,f,0.1,i*0.16,0.14)),
+  miss  :()=>tone("sine",300,220,0.12,0,0.08),
+  over  :()=>[523,392,330,262].forEach((f,i)=>tone("square",f,f,0.12,i*0.12,0.16)),
+  record:()=>[523,659,784,1046,784,1046].forEach((f,i)=>tone("square",f,f,0.09,i*0.07,0.15)),
+  start :()=>[392,523,659].forEach((f,i)=>tone("square",f,f,0.08,i*0.08,0.16)),
+};
+function sfx(n){ const t=now(); if(lastPlay[n]&&t-lastPlay[n]<70)return; lastPlay[n]=t; try{SFX[n]();}catch(e){} }
+
+const NOTE={C2:65.4,G2:98,A2:110,Bb2:116.5,C3:130.8,D3:146.8,E3:164.8,G3:196,A3:220,
+            C4:261.6,D4:293.7,E4:329.6,G4:392,A4:440,Bb4:466.2,C5:523.3};
+const BASS_DRIVE=["C2","C2","G2","C2","A2","A2","G2","G2","C2","C2","G2","C2","Bb2","Bb2","G2","G2"];
+const LEAD_DRIVE=[null,"E4",null,"G4",null,"A4","G4",null,null,"E4",null,"D4","C4",null,"D4",null];
+const BASS_BARR =["C2",null,"C2","C2","Bb2",null,"Bb2","Bb2","A2",null,"A2","A2","G2","G2","Bb2","Bb2"];
+const LEAD_BARR =["C5",null,null,"Bb4",null,null,"A4",null,"C5",null,null,"Bb4","A4","G4",null,null];
+let musicOn=false, musicStep=0, musicTimer=null;
+function musicTick(){
+  if(!musicOn)return;
+  const bm=(state==="barrier");
+  const bass=bm?BASS_BARR:BASS_DRIVE, lead=bm?LEAD_BARR:LEAD_DRIVE;
+  const stepMs=bm?165:185;
+  const b=bass[musicStep%16], l=lead[musicStep%16];
+  if(b)tone("triangle",NOTE[b],NOTE[b],stepMs/1000*0.9,0,0.10);
+  if(l)tone("square",NOTE[l],NOTE[l],stepMs/1000*0.55,0,0.045);
+  musicStep++;
+  musicTimer=setTimeout(musicTick,stepMs);
+}
+function musicStart(){ if(musicOn)return; musicOn=true; musicStep=0; musicTick(); $("musicStatus").textContent="♪ nhạc: bật"; }
+function musicStop(){ musicOn=false; clearTimeout(musicTimer); $("musicStatus").textContent="♪ nhạc: tắt"; }
+
+// ================= LED =================
+const led=$("led"); let ledTimer=null;
+function ledPulse(color,ms){ led.style.background=color; led.style.setProperty("--led-glow",color); led.classList.add("on");
+  clearTimeout(ledTimer); ledTimer=setTimeout(ledBase,ms); }
+function ledBase(){
+  const c=state==="barrier"?"#c07bff":"#7cc7ef";
+  led.style.background=c; led.style.setProperty("--led-glow",c);
+  led.classList.toggle("on",state==="drive"||state==="barrier");
+}
+
+// ================= Chuẩn hoá & so khớp giọng nói =================
+function norm(s){
+  s=" "+s.toLowerCase()
+    .replace(/it's/g,"it is").replace(/that's/g,"that is").replace(/what's/g,"what is")
+    .replace(/let's/g,"lets").replace(/i'm/g,"i am")
+    .replace(/[^a-z' ]/g," ").replace(/'/g," ").replace(/\s+/g," ")+" ";
+  return s;
+}
+function core(word){ return norm(word).trim().replace(/^(a|an|the) /,""); }
+function patternTokens(p){ return norm(p.replace(/\.{2,}/g," ").replace(/_{2,}/g," ")).trim(); }
+function laneMatch(tr){
+  const t=norm(tr);
+  for(let i=0;i<laneWords.length;i++){
+    if(i!==lane && t.includes(" "+laneWords[i].core+" "))return i;
+  }
+  return -1;
+}
+function barrierMatch(tr){
+  if(!barrier||barrier.pending)return false;
+  const t=norm(tr);
+  const pi=t.indexOf(" "+barrier.pat+" ");
+  if(pi<0)return false;
+  return t.indexOf(" "+barrier.core+" ",pi)>=0;
+}
+function editDist(a,b){
+  const m=a.length,n=b.length; if(!m)return n; if(!n)return m;
+  const d=Array.from({length:m+1},(_,i)=>[i,...Array(n).fill(0)]);
+  for(let j=0;j<=n;j++)d[0][j]=j;
+  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)
+    d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return d[m][n];
+}
+function detectNearMiss(tr){                              // dùng cho LOG (luôn chạy)
+  const t=norm(tr).trim(); if(t.length<2)return "";
+  const words=t.split(" ");
+  const targets=laneWords.filter((_,i)=>i!==lane).map(w=>w.core);
+  if(barrier&&!barrier.pending)targets.push(barrier.core);
+  let best=99,bestTarget="";
+  for(const w of words)for(const tg of targets){ const d=editDist(w,tg); if(d<best){best=d;bestTarget=tg;} }
+  return (best>0&&best<=2&&bestTarget)?bestTarget:"";
+}
+
+// ================= Voice pipeline =================
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let micStream=null, rec=null, voiceOn=false;
+const heardEl=$("heard"), meterFill=$("meterFill"), vstatus=$("vstatus");
+function startMeter(stream){
+  const a=ac(), src=a.createMediaStreamSource(stream), an=a.createAnalyser();
+  an.fftSize=512; src.connect(an);
+  const buf=new Uint8Array(an.frequencyBinCount);
+  (function loop(){
+    if(!micStream)return;
+    an.getByteTimeDomainData(buf);
+    let peak=0; for(let i=0;i<buf.length;i++) peak=Math.max(peak,Math.abs(buf[i]-128));
+    meterFill.style.width=Math.min(100,peak*1.6)+"%";
+    requestAnimationFrame(loop);
+  })();
+}
+function registerMatch(c){ matchLockUntil=now()+MATCH_LOCK_MS; if(c)lastMatchedCore=c; }
+function onTranscript(tr,isFinal){
+  lastHeard=tr.toLowerCase().trim();
+  heardEl.textContent="🎤 "+lastHeard.slice(-52);
+  if(now()<matchLockUntil)return;                         // chống interim/final cùng câu bắn 2 lần
+  let matchedId=null;
+  if(state==="barrier" && barrierMatch(tr)){ matchedId="S:"+barrier.core; registerMatch(barrier.core); smashBarrier(); }
+  else if(state==="drive"||state==="barrier"){
+    const i=laneMatch(tr);
+    if(i>=0){ matchedId=laneWords[i].core; registerMatch(laneWords[i].core); changeLane(i); }
+  }
+  if(!isFinal)return;
+  let nm="";
+  if(!matchedId && (state==="drive"||state==="barrier")){
+    unmatched++; missRun++;
+    nm=detectNearMiss(tr);
+    if(nm){ nearMissCount++; lm(nm).near_miss_count++; pendingNearMiss=nm;
+      if(nearMissEnabled){ showMsg("ALMOST! "+nm.toUpperCase(),900); sfx("miss"); ledPulse("#ffb020",250); }
+    }
+  } else if(matchedId && pendingNearMiss){ selfCorrect++; pendingNearMiss=""; }
+  track("utterance",{transcript:lastHeard,matched:matchedId,near_miss:nm||null,rt_ms:barrier&&!barrier.pending?Math.round(now()-barrier.shownAt):0});
+}
+function buildRec(){
+  rec=new SR();
+  rec.lang="en-US"; rec.continuous=true; rec.interimResults=true; rec.maxAlternatives=3;
+  rec.onstart=()=>{ vstatus.textContent="Mic: đang nghe ✓"; };
+  rec.onresult=(ev)=>{
+    for(let i=ev.resultIndex;i<ev.results.length;i++){
+      const res=ev.results[i];
+      for(let j=0;j<res.length;j++) onTranscript(res[j].transcript,res.isFinal);
+    }
+  };
+  rec.onerror=(ev)=>{
+    if(ev.error==="no-speech"||ev.error==="aborted")return;
+    if(ev.error==="not-allowed"||ev.error==="service-not-allowed"){
+      voiceOn=false; vstatus.textContent="Mic: bị chặn";
+      banner("err","<b>Micro bị chặn.</b> Chạy game qua <code>localhost</code> (file CHOI GAME trong bộ zip) rồi Allow một lần — Chrome sẽ nhớ quyền vĩnh viễn.");
+    } else if(ev.error==="network"){
+      banner("err","<b>Lỗi mạng nhận dạng giọng nói.</b> Web Speech của Chrome cần Internet.");
+    }
+  };
+  rec.onend=()=>{ if(voiceOn){ setTimeout(()=>{ try{rec.start();}catch(e){} },150); } };
+}
+async function enableVoice(){
+  ac();
+  if(!SR){
+    banner("err","<b>Trình duyệt không hỗ trợ Web Speech API.</b> Mở bằng <b>Google Chrome</b>/Edge trên máy tính.");
+    return false;
+  }
+  try{
+    micStream=await navigator.mediaDevices.getUserMedia({audio:true});
+    startMeter(micStream); hideBanner();
+  }catch(err){
+    banner("err","<b>Không truy cập được micro</b> (<code>"+err.name+"</code>). Chạy qua localhost bằng file CHOI GAME trong bộ zip, hoặc bấm 🔒 → cho phép Microphone.");
+    vstatus.textContent="Mic: lỗi";
+    return false;
+  }
+  buildRec(); voiceOn=true;
+  try{ rec.start(); }catch(e){}
+  return true;
+}
+
+// ================= Round / spawn =================
+function shuffled(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function setupRound(){
+  const t=topicOf(round);
+  const w3=shuffled(t.words.slice(0,3));            // 3 từ đầu gán vào 3 làn (cố định cả chặng)
+  laneWords=w3.map(w=>({word:w,core:core(w)}));
+  items=[]; barrier=null; waveCount=0;
+  nextBarrierAt=MINIBOSS_EVERY_MIN+((Math.random()*MINIBOSS_EVERY_RAND)|0);
+  nextSpawn=now()+800;
+  maxRound=Math.max(maxRound,round);
+  state="drive";
+  showMsg("CHANG "+round+": "+t.topic.toUpperCase(),1500);
+  for(const lw of laneWords) track("target_shown",{word_id:lw.core,type:"word",round});
+  ledBase(); updateMetrics();
+}
+function speed(){
+  const base=BASE_SPEED+SPEED_PER_ROUND*(round-1);
+  // nhanh dần RẤT NHẸ theo thời gian chơi (không giật cục): +0 → +SPEED_RAMP_MAX trải đều trong SPEED_RAMP_SEC
+  const mult=1+Math.min(SPEED_RAMP_MAX, (runMs/1000)/SPEED_RAMP_SEC*SPEED_RAMP_MAX);
+  return base*mult;
+}
+function distM(){ return Math.floor(score/1); }          // "quãng đường" xấp xỉ = điểm chạy
+function spawnWave(){
+  waveCount++;
+  if(waveCount>=nextBarrierAt){ spawnBarrier(); return; }
+  const lanes=[0,1,2];
+  // đầu game hầu như chỉ 1 vật cản; xác suất 2 vật cản dày lên rất chậm theo thời gian
+  const pDouble=Math.min(0.4, (runMs/1000)/300*0.4);
+  const nObs = Math.random()<pDouble ? 2 : 1;
+  const obsLanes=[];
+  for(let i=0;i<nObs;i++){ const idx=(Math.random()*lanes.length)|0; obsLanes.push(lanes[idx]); lanes.splice(idx,1); }
+  for(const ln of obsLanes) items.push({kind:"obs",lane:ln,y:-OB_H,passed:false,vk:(Math.random()*3)|0});
+  // làn xu = một làn trống, ưu tiên KHÁC làn xe đang chạy (ép đổi làn = nói từ)
+  let coinLane;
+  const notCar=lanes.filter(l=>l!==lane);
+  coinLane = notCar.length ? notCar[(Math.random()*notCar.length)|0] : lanes[(Math.random()*lanes.length)|0];
+  const r=Math.random();
+  const bonus = r<0.05 ? "shield" : (r<0.12 ? "magnet" : null);
+  for(let i=0;i<3;i++){
+    if(i===0 && bonus) items.push({kind:bonus,lane:coinLane,y:-OB_H-i*40});
+    else { items.push({kind:"coin",lane:coinLane,y:-OB_H-i*40,passed:false}); coinsSpawned++; }
+  }
+}
+function spawnBarrier(){
+  const t=topicOf(round);
+  const w=shuffled(t.words.slice(3))[0];            // 1 cụm chưa dùng cho câu
+  barrier={y:-46, pat:patternTokens(t.pattern), core:core(w),
+           sentence:(t.pattern.replace(/\.{2,}|_{2,}\.?|\.$/g,"").trim()+" "+w).replace(/\s+/g," "),
+           shownAt:now(), deadline:now()+BARRIER_TIME_MS, duration:BARRIER_TIME_MS, pending:false};
+  state="barrier";
+  showMsg("!!! MINI-BOSS !!!",1100);
+  track("target_shown",{word_id:"S:"+barrier.core,type:"sentence",round});
+  sfx("warn"); ledBase();
+}
+function showMsg(s,dur){ msg=s; msgUntil=dur? now()+dur : 0; }
+function floatText(x,y,txt,col){ floats.push({x,y,txt,col,life:1}); }
+
+// ================= Actions =================
+function logRow(target,type,rt,result,heard){
+  killLog.push({n:killLog.length+1,round,target,type,rt,result,heard});
+  renderLog(); updateMetrics();
+}
+function comboMult(){ return Math.min(3,1+Math.floor(streak/4)); }
+function changeLane(i){
+  if(i===lane)return;
+  // đo "biên né": có vật cản đang lao tới ở làn ĐANG đứng không? né trước bao nhiêu giây?
+  let threat=null;
+  for(const o of items){ if(o.kind==="obs" && o.lane===lane && o.y<CAR_Y && (!threat||o.y>threat.y)) threat=o; }
+  if(threat){ const sp=speed(); if(sp>0) dodgeMargins.push(Math.max(0,(CAR_Y-threat.y)/sp)); }
+  lane=i; laneSays++; streak++;
+  markHit(laneWords[i].core, 0);
+  sfx("swoosh"); ledPulse("#3dff7a",180);
+  logRow(laneWords[i].word,"từ",0,"hit",lastHeard);
+  updateMetrics();
+}
+function collectCoin(x,y){ coins++; coinsCollected++; score+=1;
+  floatText(x,y-8,"+1","#ffe08a"); sfx("coin");
+  track("reward_event",{kind:"coin",amount:1}); updateMetrics();
+}
+function hitObstacle(){
+  dodgeMargins.push(0);                       // không né kịp = biên né 0 (tín hiệu quá nhanh)
+  if(shield>0){ shield=0; invUntil=now()+INVINCIBLE_MS; sfx("shieldpop"); ledPulse("#7fd0ff",300);
+    showMsg("SHIELD!",700); logRow("(vật cản)","từ",0,"shield",lastHeard); return; }
+  crash("(vật cản)","từ");
+}
+function smashBarrier(){
+  if(!barrier)return;
+  barrier.pending=true;
+  const rt=Math.round(now()-barrier.shownAt);
+  const mult=comboMult();
+  score+=(100*round)*mult; coins+=15; sentHits++; streak++;
+  markHit("S:"+barrier.core, rt);
+  flashes.push({x:ROAD_L,y:barrier.y-6,w:ROAD_R-ROAD_L,h:44,until:now()+160});
+  floatText(W/2,CAR_Y-40,"+15 XU","#ffe08a");
+  logRow(barrier.sentence,"câu",rt,"hit",lastHeard);
+  track("reward_event",{kind:"coin",amount:15});
+  sfx("smash"); ledPulse("#c07bff",400);
+  barrier=null;
+  round++;                                          // sang chặng mới -> chủ đề mới
+  setupRound();
+}
+function crash(target,type){
+  crashes++; streak=0; lives--;
+  invUntil=now()+INVINCIBLE_MS;
+  logRow(target,type,0,"crash",lastHeard);
+  track("life_lost",{round,trigger:type==="câu"?"barrier_timeout":"obstacle",speed_px_s:Math.round(speed()),run_sec:+(runMs/1000).toFixed(1)});
+  sfx("crash"); ledPulse("#ff5544",400);
+  flashes.push({x:carX-CAR_W/2-6,y:CAR_Y-6,w:CAR_W+12,h:CAR_H+12,until:now()+160});
+  if(lives<=0){ gameOver(); }
+  else { showMsg("-1 MANG!",900); }
+}
+function gameOver(){
+  state="over"; musicStop();
+  if(score>hiscore){ hiscore=score; try{localStorage.setItem(BEST_KEY,String(Math.round(hiscore)));}catch(e){} }
+  if(coins>bestCoins){ bestCoins=coins; try{localStorage.setItem(COIN_KEY,String(bestCoins));}catch(e){} }
+  const durMs=Math.round(now()-sessionStartTs), spm=durMs>0?+(laneSays/(durMs/60000)).toFixed(1):0;
+  track("game_over",{round,score:Math.round(score),currency:coins});
+  track("session_end",{duration:durMs,words_practiced:Object.keys(learner),speech_per_min:spm,
+    coin_collect_pct:coinPct(), avg_dodge_margin_s:avgDodge(), crashes,
+    play_sec:+(runMs/1000).toFixed(1), final_speed_px_s:Math.round(speed()), crashes_per_min:crashesPerMin()});
+  saveLearner();
+  buildLeaderboard(); showMsg("",0); sfx(coins>=bestCoins?"record":"over"); updateMetrics();
+}
+
+// ================= Leaderboard =================
+function buildLeaderboard(){
+  const all=ALL_TIME.map(r=>({name:r[0],score:r[1],you:false}));
+  all.push({name:"BAN (YOU)",score:Math.round(hiscore),you:true});
+  all.sort((a,b)=>b.score-a.score);
+  lbRank=all.findIndex(r=>r.you)+1;
+  lbRows=all.slice(0,5);
+}
+
+// ================= Game flow =================
+function startGame(){
+  score=0; coins=0; round=1; lives=MAX_LIVES; streak=0; lane=1; carX=LANE_X[1];
+  shield=0; magnetUntil=0; invUntil=0; flashes=[]; floats=[]; runMs=0; lastSpeedSampleAt=0;
+  laneSays=0; sentHits=0; crashes=0; killLog=[]; maxRound=0;
+  unmatched=0; nearMissCount=0; selfCorrect=0; pendingNearMiss=""; missRun=0;
+  coinsSpawned=0; coinsCollected=0; dodgeMargins=[];
+  sessionId=Date.now()+"-"+((Math.random()*1e6)|0); sessionEvents=[]; sessionStartTs=now();
+  track("session_start",{game_id:GAME_ID,session_id:sessionId});
+  renderLog();
+  setupRound(); sfx("start"); musicStart();
+}
+const btnStar=$("btnStar");
+btnStar.onclick=async ()=>{
+  ac();
+  if(state==="drive"||state==="barrier")return;
+  if(!voiceOn){
+    btnStar.disabled=true;
+    const ok=await enableVoice();
+    btnStar.disabled=false;
+    if(!ok)return;
+  }
+  startGame();
+};
+const nmToggle=$("nmToggle"); if(nmToggle)nmToggle.onchange=(e)=>{ nearMissEnabled=!!e.target.checked; };
+const btnExport=$("btnExport"); if(btnExport)btnExport.onclick=()=>exportSession();
+function exportSession(){
+  const payload={game_id:GAME_ID,session_id:sessionId,exported_at:new Date().toISOString(),
+    summary:{score:Math.round(score),coins,bestCoins,hiscore,maxRound,laneSays,sentHits,crashes,
+             unmatched,nearMissCount,selfCorrect,
+             coinsSpawned,coinsCollected,coin_collect_pct:coinPct(),avg_dodge_margin_s:avgDodge(),
+             play_sec:+(runMs/1000).toFixed(1),crashes_per_min:crashesPerMin(),cur_speed_px_s:Math.round(speed())},
+    events:sessionEvents, learner};
+  try{ window.pikaSession=payload; }catch(e){}
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob), a=document.createElement("a");
+  a.href=url; a.download="word_racer_session_"+(sessionId||"na")+".json"; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+// ================= Render =================
+function pxText(s,x,y,size,color,align="left"){
+  cx.font=`${size}px 'Press Start 2P',monospace`; cx.fillStyle=color; cx.textAlign=align; cx.textBaseline="top";
+  cx.fillText(s,x,y);
+}
+const CAR_BMP=[ // giữ asset xe cũ (8x11, px=4 -> 32x44)
+  "00111100","01111110","01111110","11111111","10111101","11111111",
+  "01111110","01111110","11111111","10111101","01100110"];
+const OBS_BMPS=[
+  ["00011000","00111100","00111100","01111110","01111110","11111111","11111111"],
+  ["01111110","11111111","11011011","11111111","11111111","01100110"],
+  ["00111100","01111110","11111111","11111111","01111110","00111100"],
+];
+const OBS_COLS=["#ff8c1a","#ff2a2a","#ffe600"];
+function drawBitmap(bmp,ox,oy,px,color){
+  cx.fillStyle=color;
+  for(let r=0;r<bmp.length;r++)
+    for(let c=0;c<bmp[r].length;c++)
+      if(bmp[r][c]==="1")cx.fillRect(ox+c*px,oy+r*px,px,px);
+}
+function drawStar(cx0,cy0,r,color){
+  cx.fillStyle=color; cx.beginPath();
+  for(let i=0;i<10;i++){
+    const ang=-Math.PI/2+i*Math.PI/5, rr=i%2===0?r:r*0.45;
+    const x=cx0+Math.cos(ang)*rr, y=cy0+Math.sin(ang)*rr;
+    i===0?cx.moveTo(x,y):cx.lineTo(x,y);
+  }
+  cx.closePath(); cx.fill();
+}
+function drawCoin(x,y,t){
+  const r=8, pulse=1+0.12*Math.sin(t/160+x);
+  cx.fillStyle="#ffd24a"; cx.beginPath(); cx.arc(x,y+OB_H/2,r*pulse,0,Math.PI*2); cx.fill();
+  cx.fillStyle="#e0a800"; cx.beginPath(); cx.arc(x,y+OB_H/2,r*pulse*0.55,0,Math.PI*2); cx.fill();
+  cx.fillStyle="#fff3c0"; cx.fillRect(x-2,y+OB_H/2-3,2,4);
+}
+function drawShieldItem(x,y){
+  const cy=y+OB_H/2;
+  cx.fillStyle="#7fd0ff"; cx.beginPath();
+  cx.moveTo(x,cy-10); cx.lineTo(x+9,cy-6); cx.lineTo(x+9,cy+3); cx.lineTo(x,cy+11);
+  cx.lineTo(x-9,cy+3); cx.lineTo(x-9,cy-6); cx.closePath(); cx.fill();
+  cx.fillStyle="#eaf7ff"; cx.fillRect(x-1.5,cy-6,3,10); cx.fillRect(x-5,cy-1.5,10,3);
+}
+function drawMagnetItem(x,y){
+  const cy=y+OB_H/2;
+  cx.fillStyle="#e05555"; cx.fillRect(x-9,cy-9,6,12); cx.fillRect(x+3,cy-9,6,12);
+  cx.fillStyle="#c8ccd0"; cx.fillRect(x-9,cy+3,6,5); cx.fillRect(x+3,cy+3,6,5);
+  cx.fillStyle="#e05555"; cx.beginPath(); cx.arc(x,cy-9,9,Math.PI,0); cx.fill();
+  cx.fillStyle="#101418"; cx.beginPath(); cx.arc(x,cy-9,3,Math.PI,0); cx.fill();
+}
+function drawCountdownBar(frac){
+  const w=344,h=8,x=W/2,y=282;
+  cx.fillStyle="rgba(0,0,0,.5)"; cx.fillRect(x-w/2,y,w,h);
+  const col=frac>0.5?"#3dff7a":(frac>0.25?"#ffd60a":"#ff4040");
+  cx.fillStyle=col; cx.fillRect(x-w/2,y,Math.max(0,w*frac),h);
+}
+function render(t){
+  cx.fillStyle="#000"; cx.fillRect(0,0,W,H);
+
+  if(state==="title"){
+    pxText("WORD  RACER",W/2,80,18,"#00fc00","center");
+    pxText("COIN  RUSH",W/2,112,10,"#ffd24a","center");
+    pxText("PRE-A1",W/2,136,8,"#7fd0ff","center");
+    const blink=Math.floor(t/500)%2===0;
+    if(blink){
+      pxText("PRESS THE STAR BUTTON",W/2,188,10,"#ffe600","center");
+      pxText("TO START PLAYING",W/2,208,10,"#ffe600","center");
+    }
+    drawStar(W/2,252,14,"#ffca28");
+    return;
+  }
+  if(state==="over"){
+    pxText("GAME OVER",W/2,30,16,"#ff5544","center");
+    pxText("XU "+coins+"   BEST "+bestCoins,W/2,62,9,"#ffd24a","center");
+    pxText("SCORE "+Math.round(score)+"   RANK #"+lbRank,W/2,82,9,"#ffffff","center");
+    pxText("--- TOP 5 ALL TIME ---",W/2,112,8,"#7fd0ff","center");
+    for(let i=0;i<lbRows.length;i++){
+      const r=lbRows[i], y=136+i*22, col=r.you?"#ffe600":"#ffffff";
+      pxText((i+1)+".",120,y,9,col);
+      pxText(r.name,150,y,9,col);
+      cx.textAlign="right"; cx.fillText(""+r.score,372,y); cx.textAlign="left";
+    }
+    const blink=Math.floor(t/500)%2===0;
+    if(blink)pxText("PRESS * TO PLAY AGAIN",W/2,272,9,"#ffe600","center");
+    return;
+  }
+
+  // ---- đường đua ----
+  cx.fillStyle="#20262c"; cx.fillRect(ROAD_L-14,0,ROAD_R-ROAD_L+28,H);
+  cx.fillStyle="#31383f"; cx.fillRect(ROAD_L,0,ROAD_R-ROAD_L,H);
+  cx.fillStyle="#e8e8e8";
+  cx.fillRect(ROAD_L-4,0,4,H); cx.fillRect(ROAD_R,0,4,H);
+  cx.fillStyle="#aab4bd";
+  for(let k=1;k<3;k++){
+    const x=ROAD_L+LANE_W*k-2;
+    for(let y=-40+((roadScroll)%56);y<H;y+=56) cx.fillRect(x,y,4,26);
+  }
+
+  // ---- HUD ----
+  const mult=comboMult();
+  pxText("XU "+coins+(mult>1?" x"+mult:""),6,8,8,"#ffd24a");
+  pxText("C"+round,W/2,8,8,"#00fc00","center");
+  for(let i=0;i<MAX_LIVES;i++){
+    cx.fillStyle=i<lives?"#ff5b7a":"#3a1420";
+    cx.fillRect(W-24*(i+1),8,16,8);
+  }
+  if(shield>0)pxText("SHIELD",6,20,7,"#7fd0ff");
+  if(now()<magnetUntil)pxText("MAGNET",70,20,7,"#e05555");
+
+  // biển từ trên đầu mỗi làn
+  for(let i=0;i<3;i++){
+    const active=i===lane;
+    cx.fillStyle=active?"#2a2a00":"#14181c";
+    const bw=LANE_W-10;
+    cx.fillRect(LANE_X[i]-bw/2,32,bw,20);
+    cx.strokeStyle=active?"#ffe600":"#5b6b7e"; cx.lineWidth=2;
+    cx.strokeRect(LANE_X[i]-bw/2,32,bw,20);
+    pxText(laneWords[i]?laneWords[i].word:"",LANE_X[i],39,7,active?"#ffe600":"#ffffff","center");
+  }
+
+  // ---- items (xu / vật cản / khiên / nam châm) ----
+  for(const o of items){
+    if(o.kind==="obs"){ const bmp=OBS_BMPS[o.vk]; drawBitmap(bmp,LANE_X[o.lane]-bmp[0].length*2,o.y,4,OBS_COLS[o.vk]); }
+    else if(o.kind==="coin") drawCoin(LANE_X[o.lane],o.y,t);
+    else if(o.kind==="shield") drawShieldItem(LANE_X[o.lane],o.y);
+    else if(o.kind==="magnet") drawMagnetItem(LANE_X[o.lane],o.y);
+  }
+
+  // ---- rào chắn (mini-boss) ----
+  if(barrier){
+    const y=barrier.y;
+    for(let i=0;i<Math.ceil((ROAD_R-ROAD_L)/24);i++){
+      cx.fillStyle=i%2===0?"#ff3355":"#ffe600";
+      cx.fillRect(ROAD_L+i*24,y,24,16);
+    }
+    cx.fillStyle="#c8ccd0"; cx.fillRect(ROAD_L,y+16,ROAD_R-ROAD_L,6);
+    cx.fillStyle="#ff3355"; cx.fillRect(ROAD_L,y-6,ROAD_R-ROAD_L,4);
+    const frac=Math.max(0,(barrier.deadline-now())/barrier.duration);
+    drawCountdownBar(frac);
+    cx.fillStyle="rgba(0,0,0,.82)"; cx.fillRect(0,292,W,28);
+    pxText("SAY:",10,300,8,"#7fd0ff");
+    pxText(barrier.sentence.toUpperCase(),W/2+20,299,10,"#ffe600","center");
+  }
+
+  // ---- xe ----
+  const blinkInv=now()<invUntil && Math.floor(t/120)%2===0;
+  if(!blinkInv){
+    drawBitmap(CAR_BMP,carX-CAR_W/2,CAR_Y,4,"#00e000");
+    cx.fillStyle="#aff7ff"; cx.fillRect(carX-8,CAR_Y+8,16,8);
+    if(shield>0){ cx.strokeStyle="#7fd0ff"; cx.lineWidth=2; cx.strokeRect(carX-CAR_W/2-3,CAR_Y-3,CAR_W+6,CAR_H+6); }
+  }
+
+  for(const f of flashes){ if(t<f.until){ cx.globalAlpha=(f.until-t)/160; cx.fillStyle="#fff"; cx.fillRect(f.x,f.y,f.w,f.h); cx.globalAlpha=1; } }
+  for(const fl of floats){ cx.globalAlpha=Math.max(0,fl.life); pxText(fl.txt,fl.x,fl.y,8,fl.col,"center"); } cx.globalAlpha=1;
+
+  if(msg&&(msgUntil===0||t<msgUntil)){
+    pxText(msg,W/2,H/2-40,12,"#ffffff","center");
+  } else if(msgUntil&&t>=msgUntil){ msg=""; msgUntil=0; }
+}
+
+// ================= Tick =================
+let last=now();
+function tick(){
+  const t=now(); let dt=t-last; last=t; if(dt>100)dt=100;
+  const sp=speed();
+
+  if(state==="drive"||state==="barrier"){
+    roadScroll+=sp*dt/1000;
+    runMs+=dt;
+    const tx=LANE_X[lane]; carX+=(tx-carX)*Math.min(1,dt/120);
+    score+=sp*dt/1000*0.02;
+    if(t-lastSpeedSampleAt>=2000){ lastSpeedSampleAt=t;   // chuỗi tốc độ theo thời gian để review
+      track("speed_sample",{speed_px_s:Math.round(sp),run_sec:+(runMs/1000).toFixed(1),round,coins}); }
+  }
+  if(state==="drive" && t>=nextSpawn){ spawnWave(); nextSpawn=t+Math.max(WAVE_MIN,WAVE_MAX-(runMs/1000)*4); }
+
+  if(state==="drive"||state==="barrier"){
+    const magnetOn=now()<magnetUntil;
+    for(let i=items.length-1;i>=0;i--){
+      const o=items[i];
+      o.y+=sp*dt/1000;
+      // nam châm: tự hút xu ở mọi làn khi tới ngang xe
+      if(o.kind==="coin" && magnetOn && o.y>=CAR_Y-30 && o.y<=CAR_Y+60){
+        items.splice(i,1); collectCoin(LANE_X[o.lane],o.y); continue;
+      }
+      const atCar = o.y+OB_H>CAR_Y+4 && o.y<CAR_Y+CAR_H-4;
+      const sameLane = o.lane===lane && Math.abs(LANE_X[o.lane]-carX)<LANE_W*0.5;
+      if(atCar && sameLane){
+        if(o.kind==="obs"){ if(now()<invUntil){ continue; } items.splice(i,1); hitObstacle(); continue; }
+        items.splice(i,1);
+        if(o.kind==="coin") collectCoin(LANE_X[o.lane],o.y);
+        else if(o.kind==="shield"){ shield=1; sfx("powerup"); floatText(LANE_X[o.lane],o.y,"SHIELD","#7fd0ff"); track("reward_event",{kind:"shield",amount:0}); ledPulse("#7fd0ff",250); }
+        else if(o.kind==="magnet"){ magnetUntil=now()+MAGNET_MS; sfx("powerup"); floatText(LANE_X[o.lane],o.y,"MAGNET","#e05555"); track("reward_event",{kind:"magnet",amount:0}); ledPulse("#e05555",250); }
+        continue;
+      }
+      if(!o.passed && o.y>CAR_Y+CAR_H){
+        o.passed=true;
+        if(o.kind==="obs"){ score+=6*round*comboMult(); streak++; sfx("pass"); }
+      }
+      if(o.y>H+40)items.splice(i,1);
+    }
+  }
+
+  // mini-boss: rào trôi để hiển thị; hết giờ mà chưa nói câu = va chạm
+  if(state==="barrier"&&barrier){
+    barrier.y+=sp*BARRIER_SPEED_K*dt/1000;
+    if(now()>=barrier.deadline){
+      const s=barrier.sentence; barrier=null;
+      crash(s,"câu");
+      if(state!=="over"){ round++; setupRound(); }
+    }
+  }
+
+  for(let i=flashes.length-1;i>=0;i--) if(t>=flashes[i].until)flashes.splice(i,1);
+  for(let i=floats.length-1;i>=0;i--){ const f=floats[i]; f.life-=dt/900; f.y-=18*dt/1000; if(f.life<=0)floats.splice(i,1); }
+  render(t);
+  requestAnimationFrame(tick);
+}
+
+// ================= Metrics UI =================
+function avg(a){ return a.length? Math.round(a.reduce((x,y)=>x+y,0)/a.length):null; }
+// ----- speed-fit helpers: tốc độ có đang vừa sức player không? -----
+function coinPct(){ return coinsSpawned?Math.round(coinsCollected/coinsSpawned*100):null; }
+function avgDodge(){ return dodgeMargins.length?+(dodgeMargins.reduce((a,b)=>a+b,0)/dodgeMargins.length).toFixed(2):null; }
+function crashesPerMin(){ const m=runMs/60000; return m>0.05?+(crashes/m).toFixed(1):null; }
+function updateMetrics(){
+  $("mCoins").textContent=coins;
+  $("mCoinRec").textContent="kỷ lục "+Math.max(bestCoins,coins);
+  $("mScore").textContent=Math.round(score);
+  $("mHi").textContent="HI "+Math.max(hiscore,Math.round(score));
+  $("mWave").textContent=maxRound||"–";
+  $("mLane").textContent=laneSays;
+  $("mSent").textContent=sentHits;
+  $("mDist").textContent=distM()+"m";
+  $("mCrash").textContent=crashes;
+  $("mUnmatched").textContent=unmatched;
+  $("mNearMiss").textContent=nearMissCount;
+  $("mSelfCorrect").textContent=selfCorrect;
+  const durMs=sessionStartTs?now()-sessionStartTs:0;
+  $("mSpm").textContent=durMs>3000?(laneSays/(durMs/60000)).toFixed(1):"–";
+  // ----- speed-fit -----
+  const playing=(state==="drive"||state==="barrier");
+  $("mSpeed").textContent=(playing||runMs>0)?Math.round(speed())+" px/s":"–";
+  const cp=coinPct(); $("mCoinPct").textContent=cp==null?"–":cp+"%";
+  const ad=avgDodge(); $("mDodge").textContent=ad==null?"–":ad.toFixed(1)+"s";
+  const cpm=crashesPerMin(); $("mCrashMin").textContent=cpm==null?"–":cpm;
+  const r=avg(killLog.filter(k=>k.type==="câu"&&k.result==="hit").map(k=>k.rt));
+  $("mRt").textContent=r?(r/1000).toFixed(1)+"s":"–";
+}
+function renderLog(){
+  const tb=$("logBody");
+  const rows=killLog.slice(-40).reverse().map(k=>{
+    const okRes=k.result==="hit"||k.result==="shield";
+    const resTxt=k.result==="hit"?"✅ nói đúng":(k.result==="shield"?"🛡️ khiên đỡ":"💥 va chạm");
+    return `<tr><td>${k.n}</td><td>${k.round}</td><td><b>${k.target}</b></td><td>${k.type}</td>`+
+      `<td>${k.rt?(k.rt/1000).toFixed(1)+"s":"–"}</td>`+
+      `<td class="${okRes?"ok":"esc"}">${resTxt}</td>`+
+      `<td style="color:#8a97a6">${(k.heard||"").slice(-30)}</td></tr>`;
+  }).join("");
+  if(rows)tb.innerHTML=rows;
+}
+
+// boot
+try{ const b=localStorage.getItem(BEST_KEY); if(b)hiscore=parseInt(b,10)||0;
+     const c=localStorage.getItem(COIN_KEY); if(c)bestCoins=parseInt(c,10)||0; }catch(e){}
+loadLearner();
+if(!SR){
+  banner("err","<b>Trình duyệt này không có Web Speech API.</b> Mở bằng <b>Google Chrome</b> trên máy tính (chạy qua localhost để chỉ cấp quyền mic 1 lần).");
+}
+updateMetrics();
+document.fonts.ready.then(()=>render(now()));
+requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

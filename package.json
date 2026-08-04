@@ -7,7 +7,15 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "build:ios": "./scripts/pika-build.sh ios",
+    "build:android": "./scripts/pika-build.sh android",
+    "build:all": "npm run build:ios && npm run build:android",
+    "serve:ios": "npx serve build/outputs/ios/remotes -l 9000 --cors",
+    "serve:android": "npx serve build/outputs/android/remotes -l 9000 --cors",
+    "dev": "npm run build:ios && npm run serve:ios",
+    "deploy": "./scripts/deploy-vercel.sh",
+    "deploy:prod": "./scripts/deploy-vercel.sh --prod"
   },
   "dependencies": {
     "react": "18.3.1",
@@ -25,15 +33,22 @@
     "@react-native/metro-config": "0.77.0",
     "@react-native/typescript-config": "0.77.0",
     "@types/jest": "^29.5.13",
-    "@types/react": "^18.2.6",
+    "@types/react": "~18.3.0",
     "@types/react-test-renderer": "^18.0.0",
-    "eslint": "^8.19.0",
+    "eslint": "^8.0.0",
     "jest": "^29.6.3",
     "prettier": "2.8.8",
     "react-test-renderer": "18.3.1",
-    "typescript": "5.0.4"
+    "typescript": "~5.3.0",
+    "serve": "^14.2.0",
+    "pika-minigame-sdk": "^1.0.0"
   },
   "engines": {
     "node": ">=18"
+  },
+  "peerDependencies": {
+    "react": "18.3.1",
+    "react-native": "0.77.0",
+    "react-native-reanimated": "~3.16.0"
   }
 }
