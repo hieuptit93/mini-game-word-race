@@ -31,9 +31,19 @@ if [ -d "$SDK_PATH" ]; then
     echo "📦 Using pika-minigame-sdk"
 
     # Set public path if MF_PUBLIC_PATH is set
+    # Auto-replace {platform} or opposite platform in path
     PUBLIC_PATH_ARG=""
     if [ -n "$MF_PUBLIC_PATH" ]; then
-        PUBLIC_PATH_ARG="--public-path $MF_PUBLIC_PATH"
+        RESOLVED_PATH="$MF_PUBLIC_PATH"
+        # Replace {platform} placeholder
+        RESOLVED_PATH=$(echo "$RESOLVED_PATH" | sed "s/{platform}/${PLATFORM}/g")
+        # Replace opposite platform if present
+        if [ "$PLATFORM" = "ios" ]; then
+            RESOLVED_PATH=$(echo "$RESOLVED_PATH" | sed "s|/android/|/ios/|g")
+        else
+            RESOLVED_PATH=$(echo "$RESOLVED_PATH" | sed "s|/ios/|/android/|g")
+        fi
+        PUBLIC_PATH_ARG="--public-path $RESOLVED_PATH"
     fi
 
     npx pika-build ${PLATFORM} ${PUBLIC_PATH_ARG}
@@ -123,8 +133,18 @@ echo "🔨 Building for ${PLATFORM}..."
 cd "${WORKSPACE_DIR}"
 
 # Set public path if MF_PUBLIC_PATH is set
+# Auto-replace {platform} or opposite platform in path
 if [ -n "$MF_PUBLIC_PATH" ]; then
-    export MF_PUBLIC_PATH
+    RESOLVED_PATH="$MF_PUBLIC_PATH"
+    # Replace {platform} placeholder
+    RESOLVED_PATH=$(echo "$RESOLVED_PATH" | sed "s/{platform}/${PLATFORM}/g")
+    # Replace opposite platform if present
+    if [ "$PLATFORM" = "ios" ]; then
+        RESOLVED_PATH=$(echo "$RESOLVED_PATH" | sed "s|/android/|/ios/|g")
+    else
+        RESOLVED_PATH=$(echo "$RESOLVED_PATH" | sed "s|/ios/|/android/|g")
+    fi
+    export MF_PUBLIC_PATH="$RESOLVED_PATH"
 fi
 
 npm run build:${PLATFORM}

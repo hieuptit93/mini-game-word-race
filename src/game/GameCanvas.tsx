@@ -46,6 +46,7 @@ interface GameCanvasProps {
   comboMult: (streak: number) => number;
   leaderboard?: { name: string; score: number; you: boolean }[];
   lbRank?: number;
+  serverBestScore?: number;
   // Drives the title/game-over blink text. Passed in explicitly (rather
   // than computed from Date.now() at render time) because this component
   // doesn't re-render on its own cadence while on those screens — see
@@ -189,6 +190,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   comboMult,
   leaderboard = [],
   lbRank = 0,
+  serverBestScore,
   blink = true,
 }) => {
   const now = Date.now();
@@ -243,11 +245,12 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
 
   // Game over screen
   if (state === 'over') {
+    const bestScore = serverBestScore ?? stats.hiscore;
     return (
       <View style={styles.canvas}>
         <Text style={[styles.pxText, styles.overTitle]}>GAME OVER</Text>
-        <Text style={[styles.pxText, styles.overCoins]}>XU {stats.coins}   BEST {stats.bestCoins}</Text>
-        <Text style={[styles.pxText, styles.overScore]}>SCORE {Math.round(stats.score)}   RANK #{lbRank}</Text>
+        <Text style={[styles.pxText, styles.overScore]}>SCORE {Math.round(stats.score)}   BEST {Math.round(bestScore)}</Text>
+        <Text style={[styles.pxText, styles.overCoins]}>XU {stats.coins}   RANK #{lbRank}</Text>
         <Text style={[styles.pxText, styles.overLeaderboard]}>--- TOP 5 ALL TIME ---</Text>
         {leaderboard.slice(0, 5).map((row, i) => (
           <View key={i} style={[styles.lbRow, { top: 136 + i * 22 }]}>
@@ -334,13 +337,14 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
             }}
           />
 
-          {/* Say banner — flat translucent black bar + dynamic text */}
-          <View style={{ position: 'absolute', left: 0, top: 292, width: W, height: 28, backgroundColor: 'rgba(0,0,0,0.82)' }} />
-          <View style={styles.bossBannerRow}>
-            <Text style={[styles.pxText, { fontSize: 8, color: COLORS.shield }]}>SAY:</Text>
-            <Text style={[styles.pxText, { fontSize: 10, color: COLORS.obs3, flex: 1, textAlign: 'center' }]}>
-              {barrier.sentence.toUpperCase()}
-            </Text>
+          {/* Say banner — single line centered */}
+          <View style={styles.sayBannerContainer}>
+            <View style={styles.sayBannerBg}>
+              <Text style={[styles.pxText, { fontSize: 14, color: '#FFFFFF' }]}>
+                <Text style={{ color: '#FFD700' }}>🎤 </Text>
+                {barrier.sentence.toUpperCase()}
+              </Text>
+            </View>
           </View>
         </>
       )}
@@ -386,6 +390,8 @@ const styles = StyleSheet.create({
   signLabel: { position: 'absolute', left: 2, top: 9, width: 86, fontSize: 7, textAlign: 'center' },
 
   bossBannerRow: { position: 'absolute', left: 0, top: 292, width: W, height: 28, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 },
+  sayBannerContainer: { position: 'absolute', left: 0, right: 0, top: 130, alignItems: 'center', justifyContent: 'center', zIndex: 100 },
+  sayBannerBg: { backgroundColor: 'rgba(0,0,0,0.92)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, borderWidth: 2, borderColor: '#FFD700', flexDirection: 'row', alignItems: 'center' },
 
   flash: { position: 'absolute', backgroundColor: COLORS.flash },
   floatText: { position: 'absolute', fontSize: 8, textAlign: 'center', width: 60, fontFamily: 'monospace', fontWeight: 'bold' },

@@ -13,6 +13,7 @@ import sounds, { SoundName } from '../assets/sounds';
 import * as SPRITES from '../assets/images';
 import { HostBridge, GameSummaryDTO, RankingEntry } from '../types';
 import { saveScore, getSummary } from '../services/scoreService';
+import * as Tracking from '../services/trackingService';
 
 // The complete set of images GameCanvas can mount at runtime — now just the
 // pre-composed rig sprites (scripts/compose-sprites.py) plus the 3 obstacle
@@ -167,6 +168,61 @@ const WordRacerGame: React.FC<WordRacerGameProps> = ({
   }, [state, items.length, floats.length, flashes.length, stats.round]);
   // ------------------------------------------------------------------------
 
+  // Initialize tracking service
+  useEffect(() => {
+    Tracking.initTracking(host);
+  }, [host]);
+
+  // Track round start when game enters 'drive' state
+  const prevStateRef = useRef(state);
+  const topicRef = useRef('');
+  useEffect(() => {
+    // When transitioning to drive state (new round started)
+    if (state === 'drive' && prevStateRef.current !== 'drive' && prevStateRef.current !== 'barrier') {
+      // Get topic from first lane word
+      const topic = laneWords[0]?.word?.split(' ')[0] || 'unknown';
+      topicRef.current = topic;
+
+      Tracking.trackRoundStart({
+        roundIndex: stats.round,
+        topicName: topic,
+        numItem: 3,
+      });
+
+      // Track lane words shown (T1 targets)
+      laneWords.forEach((lw, i) => {
+        Tracking.trackTargetShown({
+          wordId: `${topic}.${lw.core}`,
+          indexItem: i + 1,
+          word: lw.word,
+          tier: 'T1',
+        });
+      });
+    }
+
+    // Track round end when state changes from playing to over/title
+    if ((prevStateRef.current === 'drive' || prevStateRef.current === 'barrier') &&
+        (state === 'over' || state === 'title')) {
+      const gameStatus = state === 'over' ?
+        (stats.lives <= 0 ? 'lose' : 'fail') : 'quit';
+      Tracking.trackRoundEnd({ gameStatus });
+    }
+
+    prevStateRef.current = state;
+  }, [state, stats.round, stats.lives, laneWords]);
+
+  // Track barrier shown when it appears
+  const prevBarrierRef = useRef<typeof barrier>(null);
+  useEffect(() => {
+    if (barrier && !prevBarrierRef.current) {
+      Tracking.trackBarrierShown({
+        wordId: `${topicRef.current}.${barrier.core}`,
+        sentence: barrier.sentence,
+      });
+    }
+    prevBarrierRef.current = barrier;
+  }, [barrier]);
+
   // 'level_completed' — fires whenever the round counter advances (i.e. a
   // mini-boss barrier was successfully smashed). Skips the initial mount.
   // Score is read via a ref (updated every render) rather than being a
@@ -177,6 +233,9 @@ const WordRacerGame: React.FC<WordRacerGameProps> = ({
   const prevRoundRef = useRef(stats.round);
   useEffect(() => {
     if (stats.round > prevRoundRef.current) {
+      // Track previous round completion as 'win'
+      Tracking.trackRoundEnd({ gameStatus: 'win' });
+
       host?.analytics?.logEvent('level_completed', {
         level: prevRoundRef.current,
         score: Math.round(scoreRef.current),
@@ -208,9 +267,21 @@ const WordRacerGame: React.FC<WordRacerGameProps> = ({
 
       // Check barrier match first
       if (state === 'barrier' && barrier && barrierMatch(newPortion, barrier)) {
+        // Track barrier speak (matched)
+        Tracking.trackBarrierSpeak({
+          wordId: `${topicRef.current}.${barrier.core}`,
+          transcript: newPortion,
+          isMatched: true,
+        });
+        // Track barrier result (hit)
+        Tracking.trackBarrierResult({
+          wordId: `${topicRef.current}.${barrier.core}`,
+          result: 'hit',
+        });
+
         matchLockUntilRef.current = now + MATCH_LOCK_MS;
         consumedLenRef.current = transcript.length;
-        setLastHeard(''); // clear so the transcript doesn't keep growing after a correct answer
+        setLastHeard('');
         actions.smashBarrier();
         return;
       }
@@ -219,9 +290,18 @@ const WordRacerGame: React.FC<WordRacerGameProps> = ({
       if (state === 'drive' || state === 'barrier') {
         const matchedLane = laneMatch(newPortion, laneWords, stats.lane);
         if (matchedLane >= 0) {
+          const matchedWord = laneWords[matchedLane];
+          // Track lane hit
+          Tracking.trackLaneHit({
+            wordId: `${topicRef.current}.${matchedWord.core}`,
+            laneIndex: matchedLane,
+            word: matchedWord.word,
+            transcript: newPortion,
+          });
+
           matchLockUntilRef.current = now + MATCH_LOCK_MS;
           consumedLenRef.current = transcript.length;
-          setLastHeard(''); // clear so the transcript doesn't keep growing after a correct answer
+          setLastHeard('');
           actions.changeLane(matchedLane);
           return;
         }
@@ -420,21 +500,41 @@ const WordRacerGame: React.FC<WordRacerGameProps> = ({
     });
   }, []);
 
+  // Track game over screen view
+  useEffect(() => {
+    if (state === 'over') {
+      Tracking.trackGameOverView(stats.round);
+    }
+  }, [state, stats.round]);
+
   // Start button handler
   const handleStart = useCallback(() => {
     if (state === 'title' || state === 'over') {
+      // Track replay if coming from game over
+      if (state === 'over') {
+        Tracking.trackReplay();
+      }
+
       host?.analytics?.logEvent('game_started', { level: 1 });
-      // Reset the displayed transcript and matching state for the new run —
-      // otherwise the old game's accumulated speech text (and its consumed
-      // offset) carries over into the new one.
       setLastHeard('');
       consumedLenRef.current = 0;
       matchLockUntilRef.current = 0;
-      // Reset server leaderboard for new game
       setServerLeaderboard(null);
       actions.startGame();
     }
   }, [state, actions, host?.analytics]);
+
+  // Exit button handler with tracking
+  const handleExit = useCallback(() => {
+    // Track exit based on current state
+    if (state === 'drive' || state === 'barrier') {
+      Tracking.trackExitGame();
+      Tracking.trackRoundEnd({ gameStatus: 'quit' });
+    } else if (state === 'over') {
+      Tracking.trackBackToHome();
+    }
+    onExit?.();
+  }, [state, onExit]);
 
   return (
     <View style={styles.container}>
@@ -459,13 +559,14 @@ const WordRacerGame: React.FC<WordRacerGameProps> = ({
           comboMult={comboMult}
           leaderboard={leaderboard}
           lbRank={lbRank}
+          serverBestScore={serverLeaderboard?.user_info?.max_score}
           blink={blink}
         />
 
         {/* Control overlay, in the canvas's own 480x320 coordinate space */}
         <View style={styles.controlOverlay} pointerEvents="box-none">
-          {/* Voice transcript */}
-          {(state === 'drive' || state === 'barrier') && lastHeard && (
+          {/* Voice transcript - only show in dev mode for debugging */}
+          {__DEV__ && (state === 'drive' || state === 'barrier') && lastHeard && (
             <View style={styles.heardContainer}>
               <Text style={styles.heardText} numberOfLines={2}>🎤 {lastHeard}</Text>
             </View>
@@ -480,7 +581,7 @@ const WordRacerGame: React.FC<WordRacerGameProps> = ({
 
           {/* Exit button */}
           {onExit && (
-            <TouchableOpacity style={styles.exitButton} onPress={onExit}>
+            <TouchableOpacity style={styles.exitButton} onPress={handleExit}>
               <Text style={styles.exitButtonText}>✕</Text>
             </TouchableOpacity>
           )}
