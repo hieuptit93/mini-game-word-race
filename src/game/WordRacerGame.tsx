@@ -105,13 +105,14 @@ const WordRacerGame: React.FC<WordRacerGameProps> = ({
 
   // Wrap onGameOver to save score, fetch leaderboard, and fire analytics
   const handleGameOver = useCallback(async (score: number, coins: number) => {
-    host?.analytics?.logEvent('game_over', { final_score: Math.round(score), coins });
+    const gameId = host?.gameInfo?.id;
+    host?.analytics?.logEvent('game_over', { final_score: Math.round(score), coins, game_id: gameId });
 
     // Save score and fetch leaderboard in parallel
     setLeaderboardLoading(true);
     try {
-      await saveScore(host, Math.round(score));
-      const summary = await getSummary(host);
+      await saveScore(host, Math.round(score), gameId);
+      const summary = await getSummary(host, gameId);
       setServerLeaderboard(summary);
     } catch (error) {
       console.error('[WordRacer] Leaderboard error:', error);
@@ -413,8 +414,9 @@ const WordRacerGame: React.FC<WordRacerGameProps> = ({
   // GameCanvas and a Date.now()-based blink calculated at render time would
   // freeze at whatever value it had on the first render. Drive it from an
   // explicit interval instead, only while it's actually needed.
+  // Also run during 'barrier' state to animate the speech prompt.
   useEffect(() => {
-    if (state !== 'title' && state !== 'over') return;
+    if (state !== 'title' && state !== 'over' && state !== 'barrier') return;
     const id = setInterval(() => setBlink(b => !b), 500);
     return () => clearInterval(id);
   }, [state]);

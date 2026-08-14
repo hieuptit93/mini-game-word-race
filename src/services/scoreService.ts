@@ -5,18 +5,23 @@
 
 import { HostBridge, GameScoreDTO, GameSummaryDTO, ApiResponse } from '../types';
 
-const GAME_ID = 39; // Word Racer game ID - thay bằng game_id thực tế
-
 /**
  * Save player score to server
  * Backend auto-updates best_score if new score is higher
+ * @param gameId - Game ID from host.gameInfo.id
  */
 export async function saveScore(
   host: HostBridge | undefined,
   score: number,
+  gameId: string | undefined,
 ): Promise<GameScoreDTO | null> {
   if (!host?.config?.getApiUrl || !host?.auth?.getAccessToken) {
     console.warn('[ScoreService] No host bridge, cannot save score');
+    return null;
+  }
+
+  if (!gameId) {
+    console.warn('[ScoreService] No game_id provided');
     return null;
   }
 
@@ -36,7 +41,7 @@ export async function saveScore(
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ game_id: GAME_ID, score: Math.round(score) }),
+      body: JSON.stringify({ game_id: gameId, score: Math.round(score) }),
     });
 
     const json: ApiResponse<GameScoreDTO> = await response.json();
@@ -54,11 +59,13 @@ export async function saveScore(
 
 /**
  * Get current user's score (best_score and last_score)
+ * @param gameId - Game ID from host.gameInfo.id
  */
 export async function getScore(
   host: HostBridge | undefined,
+  gameId: string | undefined,
 ): Promise<GameScoreDTO | null> {
-  if (!host?.config?.getApiUrl || !host?.auth?.getAccessToken) {
+  if (!host?.config?.getApiUrl || !host?.auth?.getAccessToken || !gameId) {
     return null;
   }
 
@@ -66,7 +73,7 @@ export async function getScore(
   if (!token) return null;
 
   const apiUrl = host.config.getApiUrl();
-  const url = `${apiUrl}/robot-user/api/v1/app-game/score?game_id=${GAME_ID}`;
+  const url = `${apiUrl}/robot-user/api/v1/app-game/score?game_id=${gameId}`;
 
   try {
     const response = await fetch(url, {
@@ -84,11 +91,13 @@ export async function getScore(
 
 /**
  * Get leaderboard summary (TOP 10 + current user info)
+ * @param gameId - Game ID from host.gameInfo.id
  */
 export async function getSummary(
   host: HostBridge | undefined,
+  gameId: string | undefined,
 ): Promise<GameSummaryDTO | null> {
-  if (!host?.config?.getApiUrl || !host?.auth?.getAccessToken) {
+  if (!host?.config?.getApiUrl || !host?.auth?.getAccessToken || !gameId) {
     return null;
   }
 
@@ -96,7 +105,7 @@ export async function getSummary(
   if (!token) return null;
 
   const apiUrl = host.config.getApiUrl();
-  const url = `${apiUrl}/robot-user/api/v1/app-game/summary?game_id=${GAME_ID}`;
+  const url = `${apiUrl}/robot-user/api/v1/app-game/summary?game_id=${gameId}`;
 
   try {
     const response = await fetch(url, {

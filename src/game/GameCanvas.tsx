@@ -337,11 +337,10 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
             }}
           />
 
-          {/* Say banner — single line centered */}
+          {/* Say banner — single line centered with blink animation */}
           <View style={styles.sayBannerContainer}>
             <View style={styles.sayBannerBg}>
-              <Text style={[styles.pxText, { fontSize: 14, color: '#FFFFFF' }]}>
-                <Text style={{ color: '#FFD700' }}>🎤 </Text>
+              <Text style={[styles.sayBannerText, { opacity: blink ? 1 : 0.5 }]}>
                 {barrier.sentence.toUpperCase()}
               </Text>
             </View>
@@ -390,8 +389,9 @@ const styles = StyleSheet.create({
   signLabel: { position: 'absolute', left: 2, top: 9, width: 86, fontSize: 7, textAlign: 'center' },
 
   bossBannerRow: { position: 'absolute', left: 0, top: 292, width: W, height: 28, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 },
-  sayBannerContainer: { position: 'absolute', left: 0, right: 0, top: 130, alignItems: 'center', justifyContent: 'center', zIndex: 100 },
-  sayBannerBg: { backgroundColor: 'rgba(0,0,0,0.92)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, borderWidth: 2, borderColor: '#FFD700', flexDirection: 'row', alignItems: 'center' },
+  sayBannerContainer: { position: 'absolute', left: 0, right: 0, top: 130, flexDirection: 'row', justifyContent: 'center', zIndex: 100 },
+  sayBannerBg: { backgroundColor: 'rgba(0,0,0,0.85)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },
+  sayBannerText: { fontFamily: 'monospace', fontWeight: 'bold', fontSize: 14, color: '#FFD700' },
 
   flash: { position: 'absolute', backgroundColor: COLORS.flash },
   floatText: { position: 'absolute', fontSize: 8, textAlign: 'center', width: 60, fontFamily: 'monospace', fontWeight: 'bold' },

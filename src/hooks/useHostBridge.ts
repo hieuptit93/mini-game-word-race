@@ -4,7 +4,7 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import { HostBridge, GameProps } from '../types';
+import { HostBridge, GameProps, GameMeta } from '../types';
 
 // ============================================================================
 // MOCK VALUES (for standalone development)
@@ -112,6 +112,9 @@ export function getConfig(host?: HostBridge, key?: string): string | undefined {
  * ```
  */
 export function useHostBridge(host?: HostBridge) {
+  // Game Info
+  const gameInfo: GameMeta | undefined = host?.gameInfo;
+
   // Auth
   const accessToken = useMemo(() => getAccessToken(host), [host]);
   const userId = useMemo(() => getUserId(host), [host]);
@@ -267,6 +270,9 @@ export function useHostBridge(host?: HostBridge) {
   );
 
   return {
+    // Game Info
+    gameInfo,
+
     // Auth
     accessToken,
     userId,

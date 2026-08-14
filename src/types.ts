@@ -3,6 +3,22 @@
  * These types define the contract between mini-game and host app.
  */
 
+/** Game metadata injected by host app */
+export interface GameMeta {
+  /** Stable id used for score submission / analytics (e.g. "36", "word_racer") */
+  id: string;
+  /** Display name (e.g. "Word Racer") */
+  name: string;
+  /** Short description */
+  description?: string;
+  /** Thumbnail/icon URL */
+  icon?: string;
+  /** Module Federation scope */
+  scope: string;
+  /** Bundle version */
+  version: string;
+}
+
 export interface LetterScore {
   letter: string;
   score: number;
@@ -28,6 +44,9 @@ export type SpeechResultCallback = (result: SpeechToTextResult) => void;
  * In dev mode, this is mocked by MockHost.
  */
 export interface HostBridge {
+  /** Game metadata injected by host app */
+  gameInfo?: GameMeta;
+
   /** Auth info from host app */
   auth: {
     /** Get current access token (empty if not logged in) */
